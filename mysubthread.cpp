@@ -1,12 +1,17 @@
 #include "mysubthread.h"
 
+#include "mydatabase.h"
+#include "threadpool.h"
+
 MySubThread::MySubThread()
 {
-
+    this->myDatabase = new MyDataBase("root", "root");
 }
 
 MySubThread::~MySubThread()
 {
+    delete this->myDatabase;
+    this->myDatabase = nullptr;
 }
 
 void MySubThread::add_fd(int)

@@ -8,6 +8,7 @@ add_executable(MyServer main.cpp
     mydatabase.h mydatabase.cpp
     config.h
     threadpool.h threadpool.cpp
+    config.cpp
 )
 
 target_compile_features( MyServer PRIVATE cxx_std_20 )

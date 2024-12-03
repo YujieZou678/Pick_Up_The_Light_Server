@@ -6,7 +6,7 @@ date: 2024.12.2
 #ifndef MYSUBTHREAD_H
 #define MYSUBTHREAD_H
 
-class MyDataBase;
+class MyDataBase;  //前置声明
 class ThreadPool;
 
 class MySubThread
@@ -20,8 +20,8 @@ public:
     void update_all_info_vod_list();   //实时更新所有客户端点播列表
 
 private:
-    MyDataBase* myDatabase;  //数据库指针
-    ThreadPool* threadPool;  //线程池指针
+    MyDataBase* myDatabase;  //声明数据库指针
+    ThreadPool* threadPool;  //声明线程池指针
 };
 
 #endif // MYSUBTHREAD_H
