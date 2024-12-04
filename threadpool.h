@@ -8,32 +8,26 @@ date: 2024.12.2
 
 #include <vector>
 using std::vector;
-#include <stdarg.h>
 
 /* 单个任务类
- * 存储了一个任意方法函数，及其可变参数 */
+ * 存储了一个任意方法函数，及其可变参数，最大3个参数 */
 class Task {
 public:
-    void A(void (*callback)(int count, ...), int count, ...) {
-        this->function = callback;
-        this->count = count;
-
-        /* 获取参数 */
-        va_list datas;
-        va_start(datas, count);
-        for (int i=0; i<count; i++) {
-            parameters.push_back(va_arg(datas, void*));
-        }
-        va_end(datas);
+    Task(void(*callback)(void*a,void*b,void*c),
+         void*a=nullptr,void*b=nullptr,void*c=nullptr)
+    {
+        function = callback;
+        parameters.push_back(a);
+        parameters.push_back(b);
+        parameters.push_back(c);
     }
 
-    void B() {
-        function(count, parameters);
+    void execute_task() {
+        function(parameters[0], parameters[1], parameters[2]);
     }
 
 public:
-    void(*function)(int count, ...);  //函数指针变量
-    int count;
+    void(*function)(void*,void*,void*);  //函数指针变量
     vector<void*> parameters;
 };
 

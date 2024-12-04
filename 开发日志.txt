@@ -6,3 +6,39 @@
 1.熟悉了头文件包含问题，全局变量声明定义问题。
 2.开始线程池的搭建...
 3.构建了一个Task类，通过函数指针使其存储了一个任意方法函数，及其可变参数。
+
+2024.12.4
+1.参数可变的函数的传递与储存：
+    一.
+        1)void(*callback)(int count, ...);  //函数指针
+        2)void A(void(*callback)(int count, ...), int count, ...);  //传递
+        3)利用<stdarg.h>的函数获取参数;
+        缺点：没有类型及边界检查，不安全，不建议使用;
+             要传递的函数写法固定为 类型 函数名(int count, ...)。
+    二.
+        1)template<typename... Args>
+          void(*callback)(Args...);  //错误写法
+        2)template<typename... Args>
+          void A(void(*callback)(Args...), Args... args);
+        3)利用模板参数包和函数参数包实现;
+        缺点：不能声明模板函数指针(成员)变量，只能在模板函数中作为参数传递，故不能储存一个可变函数。
+    三.
+        1)void(*callback)(void*a,void*b,void*c);
+        2)void A(void(*callback)(void*a,void*b,void*c),
+                 void*a=nullptr,void*b=nullptr,void*c=nullptr);
+        3）利用void*实现;
+        缺点：参数最大数量固定;
+             要传递的函数写法固定为 类型 函数名(void*a,void*b,void*c)。
+2.
+             
+             
+             
+             
+             
+             
+             
+             
+             
+             
+
+             
