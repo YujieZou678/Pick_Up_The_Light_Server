@@ -13,6 +13,9 @@ using std::vector;
 /* 服务端最大连接数 */
 #define MAX_CONNECT_COUNT 100
 
+/* 一次销毁或增加线程数 */
+#define CHANGE_THREAD_NUMBER 2
+
 /* 评论结构体 */
 struct MyCommit
 {
