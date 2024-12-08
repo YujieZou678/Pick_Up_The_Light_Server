@@ -26,9 +26,12 @@ ThreadPool::ThreadPool(int min, int max)
     }
 }
 
-ThreadPool::~ThreadPool()  //不能加锁导致有极小的概率会造成同时join和detach异常终止程序
+ThreadPool::~ThreadPool()
 {
+    unique_lock<mutex> lk(this->poll_mutex);  //加锁，此处不加锁可能出现各种问题，如：相互阻塞，异常终止等。
     this->shutdown = true;
+    this->destroy_num = 0;
+    lk.unlock();  //必须解锁，否则相互阻塞
     /* 阻塞回收管理者线程 */
     if (this->manager_thread.joinable()) this->manager_thread.join();
     /* 唤醒并阻塞回收工作者线程 */
@@ -124,7 +127,10 @@ void ThreadPool::manager_execute(void* arg)
 
         unique_lock<mutex> lk(pool->poll_mutex);  //加锁
 
-        if (pool->shutdown) return;  //线程池对象销毁则自杀
+        if (pool->shutdown) {  //线程池对象销毁则自杀
+            std::cout << "threadID：" << std::this_thread::get_id() << "exit..." << std::endl;
+            return;
+        }
 
         /* 添加线程的情况
          * 任务个数 > 存活线程数 && 存活线程数 < 最大线程数 */

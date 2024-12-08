@@ -1,5 +1,5 @@
 /*
-func: 线程池类，定义了线程池的操作。
+func: 线程池类，声明了线程池的操作。
 author: zouyujie
 date: 2024.12.2
 */
@@ -51,7 +51,7 @@ public:
 class ThreadPool
 {
 public:
-    ThreadPool(int, int);
+    ThreadPool(int min, int max);  //最小线程数，最大线程数
     void add_task(Task);  //添加任务
     int get_live_num();  //获取当前存活线程数
     int get_busy_num();  //获取当前忙碌线程数
