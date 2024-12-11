@@ -4,7 +4,7 @@ project(MyServer LANGUAGES CXX)
 
 add_executable(MyServer main.cpp
     myserver.h myserver.cpp
-    mysubthread.h mysubthread.cpp
+
     mydatabase.h mydatabase.cpp
     config.h
     threadpool.h threadpool.cpp

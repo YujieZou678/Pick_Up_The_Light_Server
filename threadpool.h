@@ -53,6 +53,8 @@ class ThreadPool
 public:
     ThreadPool(int min, int max);  //最小线程数，最大线程数
     void add_task(Task);  //添加任务
+    void add_task(void(*callback)(void*a,void*b,void*c),  //重载
+                  void*a=nullptr,void*b=nullptr,void*c=nullptr);
     int get_live_num();  //获取当前存活线程数
     int get_busy_num();  //获取当前忙碌线程数
     ~ThreadPool();

@@ -1,3 +1,8 @@
+/*
+func: 线程池的实现。
+author: zouyujie
+date: 2024.12.2
+*/
 #include "threadpool.h"
 
 using std::unique_lock;
@@ -43,6 +48,15 @@ ThreadPool::~ThreadPool()
 
 void ThreadPool::add_task(Task task)
 {
+    unique_lock<mutex> lk(this->poll_mutex);  //加锁
+    if (this->shutdown) return;
+    this->taskQ.push(task);        //添加任务
+    this->poll_cond.notify_all();  //唤醒线程执行
+}
+
+void ThreadPool::add_task(void (*callback)(void *, void *, void *), void *a, void *b, void *c)
+{
+    Task task(callback, a, b, c);
     unique_lock<mutex> lk(this->poll_mutex);  //加锁
     if (this->shutdown) return;
     this->taskQ.push(task);        //添加任务

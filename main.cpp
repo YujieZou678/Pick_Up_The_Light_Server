@@ -1,22 +1,8 @@
-#include <iostream>
-using std::cout;
-using std::endl;
-#include "threadpool.h"
+#include "myserver.h"
 
-void task(void*,void*,void*) {
-    std::this_thread::sleep_for(std::chrono::seconds(5));
-    cout << 123 << endl;
-}
-
-int main()
+int main(int argc, char* argv[])
 {
-    ThreadPool pool(1, 5);
-    Task t(task);
-    pool.add_task(t);
-    pool.add_task(t);
-    pool.add_task(t);
-    pool.add_task(t);
-
-    std::this_thread::sleep_for(std::chrono::seconds(30));
+    MyServer myServer("127.0.0.1", "2222");
+    myServer.launch();  //循环监听
     return 0;
 }
