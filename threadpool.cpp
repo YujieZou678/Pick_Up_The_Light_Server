@@ -5,7 +5,6 @@ date: 2024.12.2
 */
 #include "threadpool.h"
 
-using std::unique_lock;
 #include <iostream>
 using std::cout;
 using std::endl;
@@ -31,6 +30,14 @@ ThreadPool::ThreadPool(int min, int max)
     }
 }
 
+void ThreadPool::add_task(Task &task)
+{
+    unique_lock<mutex> lk(this->poll_mutex);  //加锁
+    if (this->shutdown) return;
+    taskQ.push(task);
+    this->poll_cond.notify_all();  //唤醒线程执行
+}
+
 ThreadPool::~ThreadPool()
 {
     unique_lock<mutex> lk(this->poll_mutex);  //加锁，此处不加锁可能出现各种问题，如：相互阻塞，异常终止等。
@@ -44,23 +51,6 @@ ThreadPool::~ThreadPool()
     for (int i=0; i<worker_threads.size(); i++) {
         if (worker_threads[i].joinable()) worker_threads[i].join();
     }
-}
-
-void ThreadPool::add_task(Task task)
-{
-    unique_lock<mutex> lk(this->poll_mutex);  //加锁
-    if (this->shutdown) return;
-    this->taskQ.push(task);        //添加任务
-    this->poll_cond.notify_all();  //唤醒线程执行
-}
-
-void ThreadPool::add_task(void (*callback)(void *, void *, void *), void *a, void *b, void *c)
-{
-    Task task(callback, a, b, c);
-    unique_lock<mutex> lk(this->poll_mutex);  //加锁
-    if (this->shutdown) return;
-    this->taskQ.push(task);        //添加任务
-    this->poll_cond.notify_all();  //唤醒线程执行
 }
 
 int ThreadPool::get_live_num()
@@ -121,7 +111,7 @@ void ThreadPool::worker_execute(void* arg)
         lk.unlock();  //手动解锁
         //执行该任务
         std::cout << "threadID：" << std::this_thread::get_id() << "start working..." << std::endl;
-        task.execute_task();
+        task();
         //任务执行完毕
         std::cout << "threadID：" << std::this_thread::get_id() << "end working..." << std::endl;
         lk.lock();
@@ -167,5 +157,6 @@ void ThreadPool::manager_execute(void* arg)
         }
     }
 }
+
 
 

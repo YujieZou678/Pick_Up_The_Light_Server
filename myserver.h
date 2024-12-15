@@ -21,10 +21,9 @@ public:
     void launch();  //启动服务器
 
     /* 作为任务加入线程池 */
-    static void add_fd(void*,void*,void*);  //加入一个fd,该fd有可读消息
-    static void receive_file(void*,void*,void*);  //接收文件
-    static void update_all_info_live_list();  //实时更新所有客户端直播列表
-    static void update_all_info_vod_list();   //实时更新所有客户端点播列表s
+    static void add_fd(int, int);  //加入一个fd,该fd有可读消息
+    static void receive_file(int); //接收文件
+    void do_register(int fd,const char*,const char*);  //注册
 
 private:
     const char* ip;

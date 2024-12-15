@@ -23,7 +23,7 @@ using std::vector;
 #define MAX_EPOLL_EVENTS 10
 
 /* epoll超时设置 */
-#define EPOLL_TIME_OUT 2000
+#define EPOLL_TIME_OUT -1
 
 /* 一次接收消息最大内存 */
 #define MAX_ONCE_RECV 1024
@@ -41,7 +41,7 @@ using std::vector;
 #define DATABASE_NAME "root"
 
 /* 数据库密码 */
-#define DATABASE_PASSWORD "root"
+#define DATABASE_PASSWORD ""
 
 /* 评论结构体 */
 struct MyCommit
@@ -60,8 +60,25 @@ struct MyVedio
     const char* url;      //视频地址
 };
 
+///* 删除单个指针 */
+//template <typename T>
+//inline void safe_delete(T *&target) {
+//    if (nullptr != target) {
+//        delete target;
+//        target = nullptr;
+//    }
+//}
+
+///* 删除数组指针 */
+//template <typename T>
+//inline void safe_delete_arr(T *&target) {
+//    if (nullptr != target) {
+//        delete[] target;
+//        target = nullptr;
+//    }
+//}
+
 /* 声明全局变量 */
-extern vector<int> fds;  //所有连接的fd
 extern vector<MyVedio> myVedio_live_list;  //直播视频列表信息
 extern vector<MyVedio> myVedio_vod_list;   //点播视频列表信息
 

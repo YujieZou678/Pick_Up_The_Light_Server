@@ -1,3 +1,8 @@
+/*
+func: 全局变量的定义。
+author: zouyujie
+date: 2024.12.2
+*/
 #include "config.h"
 
 /* 定义全局变量 */

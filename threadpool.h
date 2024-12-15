@@ -14,47 +14,28 @@ using std::queue;
 using std::thread;
 #include <mutex>
 using std::mutex;
+using std::unique_lock;
 #include <condition_variable>
 using std::condition_variable;
+#include <functional>
 
-/* 单个任务类
- * 存储了一个任意方法函数，及其可变参数，最大3个参数 */
-class Task {
-public:
-    Task(void(*callback)(void*a,void*b,void*c),
-         void*a=nullptr,void*b=nullptr,void*c=nullptr)
-    {
-        function = callback;
-        parameters.push_back(a);
-        parameters.push_back(b);
-        parameters.push_back(c);
-    }
-    ~Task() {
-//        for (auto parameter : parameters) {
-//            if (parameter != nullptr) {
-//                delete parameter;
-//                parameter = nullptr;
-//            }
-//        }
-    }
-
-    void execute_task() {
-        function(parameters[0], parameters[1], parameters[2]);
-    }
-
-public:
-    void(*function)(void*,void*,void*);  //函数指针变量
-    vector<void*> parameters;  //如果传入堆对象，需要手动释放，这里只传入栈对象
-};
+using Task = std::function<void()>;  //函数对象类型
 
 /* 线程池类 */
 class ThreadPool
 {
 public:
     ThreadPool(int min, int max);  //最小线程数，最大线程数
-    void add_task(Task);  //添加任务
-    void add_task(void(*callback)(void*a,void*b,void*c),  //重载
-                  void*a=nullptr,void*b=nullptr,void*c=nullptr);
+    template<class F,class... Args>
+    void add_task(F &&f, Args&&... args) {  //完美转发(万能引用)
+        Task task = std::bind(std::forward<F>(f), std::forward<Args>(args)...);
+        unique_lock<mutex> lk(this->poll_mutex);  //加锁
+        if (this->shutdown) return;
+        taskQ.push(task);
+        this->poll_cond.notify_all();  //唤醒线程执行
+    }
+
+    void add_task(Task&); //重载
     int get_live_num();  //获取当前存活线程数
     int get_busy_num();  //获取当前忙碌线程数
     ~ThreadPool();
