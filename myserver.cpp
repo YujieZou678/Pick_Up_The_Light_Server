@@ -109,7 +109,7 @@ void MyServer::launch()
                 }
                 else {
                     /* 处理新消息 */
-                    this->threadPool.get()->add_task(add_fd, fd, epoll_fd);
+                    this->threadPool.get()->add_task(handle_fd_event, fd, epoll_fd);
                 }
             }
         } else if (num == 0) {
@@ -124,7 +124,7 @@ void MyServer::launch()
 }
 
 /* 参数：fd epoll_fd */
-void MyServer::add_fd(int fd, int epoll_fd)
+void MyServer::handle_fd_event(int fd, int epoll_fd)
 {
     int ret = 0;  //返回值
     struct sockaddr_in cliaddr;  //获取客户端地址
@@ -132,13 +132,18 @@ void MyServer::add_fd(int fd, int epoll_fd)
 
     /* 读取客户端请求 */
     char buf[MAX_ONCE_RECV];
-    memset(buf, 0, sizeof(buf));
     ret = recv(fd, buf, sizeof(buf), 0);
     if (ret > 0) {
         /* 接收到消息 */
-        std::cout << buf << std::endl;
-        //
-        //
+        Msg* data = reinterpret_cast<Msg*>(buf);
+        switch (data->purpose) {
+        case Purpose::Register:
+            std::cout << "Register" << std::endl;
+            std::cout << data->msg.id << " " << data->msg.pw << std::endl;
+            break;
+        default:
+            break;
+        }
     } else if (ret == 0) {
         /* 客户端断开连接，需要删除fd */
         ret = getpeername(fd, (struct sockaddr*) &cliaddr, &cliaddr_len);

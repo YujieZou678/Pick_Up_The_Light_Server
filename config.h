@@ -60,23 +60,22 @@ struct MyVedio
     const char* url;      //视频地址
 };
 
-///* 删除单个指针 */
-//template <typename T>
-//inline void safe_delete(T *&target) {
-//    if (nullptr != target) {
-//        delete target;
-//        target = nullptr;
-//    }
-//}
+/* 客户端请求枚举 */
+enum class Purpose {
+    Register
+};
 
-///* 删除数组指针 */
-//template <typename T>
-//inline void safe_delete_arr(T *&target) {
-//    if (nullptr != target) {
-//        delete[] target;
-//        target = nullptr;
-//    }
-//}
+/* 注册消息结构体 */
+struct Register_Msg {
+    char id[20];
+    char pw[20];
+};
+
+/* 通用消息结构体 */
+struct Msg {
+    Purpose purpose;
+    Register_Msg msg;
+};
 
 /* 声明全局变量 */
 extern vector<MyVedio> myVedio_live_list;  //直播视频列表信息

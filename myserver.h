@@ -21,7 +21,7 @@ public:
     void launch();  //启动服务器
 
     /* 作为任务加入线程池 */
-    static void add_fd(int, int);  //加入一个fd,该fd有可读消息
+    static void handle_fd_event(int, int);  //处理一个fd的事件
     static void receive_file(int); //接收文件
     void do_register(int fd,const char*,const char*);  //注册
 
