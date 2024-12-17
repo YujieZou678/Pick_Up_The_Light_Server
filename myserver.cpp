@@ -130,16 +130,21 @@ void MyServer::handle_fd_event(int fd, int epoll_fd)
     struct sockaddr_in cliaddr;  //获取客户端地址
     socklen_t cliaddr_len = sizeof(cliaddr);
 
-    /* 读取客户端请求 */
-    char buf[MAX_ONCE_RECV];
-    ret = recv(fd, buf, sizeof(buf), 0);
+    /* 1.读网络包头 */
+    char buf[sizeof(NetPacketHeader)+1];
+    ret = recv(fd, buf, sizeof(NetPacketHeader), 0);
     if (ret > 0) {
-        /* 接收到消息 */
-        Msg* data = reinterpret_cast<Msg*>(buf);
-        switch (data->purpose) {
-        case Purpose::Register:
+        NetPacketHeader* pheader = reinterpret_cast<NetPacketHeader*>(buf);
+        switch (pheader->purpose) {
+        case Purpose::Register: {
             std::cout << "Register" << std::endl;
-            std::cout << data->msg.id << " " << data->msg.pw << std::endl;
+            /* 2.读网络包数据 */
+            int data_size = pheader->dataSize - sizeof(NetPacketHeader);
+            char buf[data_size+1];
+            ret = recv(fd, buf, data_size, 0);
+            Register_Msg* re_msg = reinterpret_cast<Register_Msg*>(buf);
+            std::cout << re_msg->id << " " << re_msg->pw << std::endl;
+        }
             break;
         default:
             break;

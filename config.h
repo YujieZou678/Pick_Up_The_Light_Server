@@ -71,10 +71,10 @@ struct Register_Msg {
     char pw[20];
 };
 
-/* 通用消息结构体 */
-struct Msg {
-    Purpose purpose;
-    Register_Msg msg;
+/* 网络数据包包头 */
+struct NetPacketHeader {
+    Purpose purpose;  //目的
+    unsigned short dataSize;  //包大小=包头大小+数据长度
 };
 
 /* 声明全局变量 */
