@@ -62,6 +62,7 @@ struct MyVedio
 
 /* 客户端请求枚举 */
 enum class Purpose {
+    Heart,
     Register
 };
 
@@ -74,11 +75,10 @@ struct Register_Msg {
 /* 网络数据包包头 */
 struct NetPacketHeader {
     Purpose purpose;  //目的
-    unsigned short dataSize;  //包大小=包头大小+数据长度
 };
 
-/* 声明全局变量 */
-extern vector<MyVedio> myVedio_live_list;  //直播视频列表信息
-extern vector<MyVedio> myVedio_vod_list;   //点播视频列表信息
+/* 函数的声明 */
+int my_recv(int fd, void* buf, int length, int flags);  //确保接收的数据完整(一定为length字节或者错误)
+int my_send(int fd, void* buf, int length, int flags);  //确保发送的数据完整
 
 #endif // CONFIG_H

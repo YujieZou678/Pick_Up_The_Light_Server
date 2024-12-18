@@ -7,8 +7,6 @@ date: 2024.12.2
 
 #include <string>
 using std::string;
-#include <stdexcept>
-using std::domain_error;
 
 MyDataBase::MyDataBase(const char* accountNumber, const char* password)
 {
@@ -16,9 +14,8 @@ MyDataBase::MyDataBase(const char* accountNumber, const char* password)
         std::cout << "DB Database: Successfully connect!" << std::endl;
     }
     else {
-        string error {"DB Database: connection failed, "};
-        error = error + conn.error() + "!";
-        throw domain_error(error);
+        perror("DB Database: connection failed");
+        exit(1);
     }
 }
 

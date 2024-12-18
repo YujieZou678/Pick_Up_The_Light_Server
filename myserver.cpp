@@ -13,21 +13,18 @@ date: 2024.12.2
 #include <iostream>
 #include <stdexcept>
 
+#include "config.h"
 #include "threadpool.h"
 #include "mydatabase.h"
-#include "config.h"
+
+/* 静态变量初始化 */
+ThreadPool MyServer::threadPool = ThreadPool(MIN_THREAD_NUMBER, MAX_THREAD_NUMBER);
+MyDataBase MyServer::myDatabase = MyDataBase(DATABASE_NAME, DATABASE_PASSWORD);
 
 MyServer::MyServer(const char* ip, const char* port)
 {
     this->ip = ip;
     this->port = port;
-
-    this->threadPool = make_unique<ThreadPool>(MIN_THREAD_NUMBER, MAX_THREAD_NUMBER);
-    try {
-        this->myDatabase = make_unique<MyDataBase>(DATABASE_NAME, DATABASE_PASSWORD);
-    } catch (std::domain_error e) {
-        std::cerr << e.what() << std::endl;
-    }
 }
 
 MyServer::~MyServer()
@@ -71,6 +68,10 @@ void MyServer::launch()
         return;
     }
 
+    /* 启动心跳包检测线程 */
+    Task heart_check_task = std::bind(&MyServer::handle_heart_event, this, epoll_fd);
+    MyServer::threadPool.add_task(heart_check_task);
+
     /* 添加需要监听的fd */
     struct epoll_event ev;
     ev.events = EPOLLIN;  //可读事件
@@ -99,6 +100,12 @@ void MyServer::launch()
                     }
                     std::cout << "新连接：" << inet_ntoa(cliaddr.sin_addr)
                               << ":" << ntohs(cliaddr.sin_port) << std::endl;
+                    /* 心跳 */
+                    string addr = inet_ntoa(cliaddr.sin_addr) + ntohs(cliaddr.sin_port);
+                    unique_lock<mutex> lk(server_mutex);  //加锁
+                    heart_check_map.insert(make_pair(new_fd, make_pair(addr, 0)));
+                    lk.unlock();  //解锁
+                    /* epoll */
                     ev.data.fd = new_fd;
                     ev.events = EPOLLIN|EPOLLET;  //可读事件+边缘模式
                     ret = epoll_ctl(epoll_fd, EPOLL_CTL_ADD, new_fd, &ev);
@@ -109,7 +116,8 @@ void MyServer::launch()
                 }
                 else {
                     /* 处理新消息 */
-                    this->threadPool.get()->add_task(handle_fd_event, fd, epoll_fd);
+                    Task new_fd_task = std::bind(&MyServer::handle_fd_event, this, fd, epoll_fd);
+                    MyServer::threadPool.add_task(new_fd_task);
                 }
             }
         } else if (num == 0) {
@@ -123,6 +131,36 @@ void MyServer::launch()
     }  // 循环
 }
 
+void MyServer::handle_heart_event(int epoll_fd)
+{
+    std::cout << "the heartbeat check thread start..." << std::endl;
+    /* 每3秒轮询检测一次心跳包情况 */
+    while (1) {
+        map<int,pair<string,int>>::iterator it = heart_check_map.begin();
+        for (it; it!=heart_check_map.end(); it++) {
+            pair<int,pair<string,int>> data = *it;
+            if (data.second.second == 3) {  //连续3次检测没有心跳包，则判定客户端断开
+                std::cout << "The client " << data.second.first << " has been offline..." << std::endl;
+                int fd = data.first;
+                close(fd);
+                /* 心跳 */
+                unique_lock<mutex> lk(server_mutex);  //加锁
+                heart_check_map.erase(it++);
+                lk.unlock();
+                /* epoll */
+                if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL) == -1) {
+                    perror("epoll_ctl error");
+                }
+            } else if (data.second.second < 3 && data.second.second >= 0) {
+                data.second.second += 1;
+                ++it;
+            }
+        }
+
+        sleep(3);
+    }
+}
+
 /* 参数：fd epoll_fd */
 void MyServer::handle_fd_event(int fd, int epoll_fd)
 {
@@ -130,48 +168,57 @@ void MyServer::handle_fd_event(int fd, int epoll_fd)
     struct sockaddr_in cliaddr;  //获取客户端地址
     socklen_t cliaddr_len = sizeof(cliaddr);
 
-    /* 1.读网络包头 */
-    char buf[sizeof(NetPacketHeader)+1];
-    ret = recv(fd, buf, sizeof(NetPacketHeader), 0);
-    if (ret > 0) {
-        NetPacketHeader* pheader = reinterpret_cast<NetPacketHeader*>(buf);
-        switch (pheader->purpose) {
-        case Purpose::Register: {
-            std::cout << "Register" << std::endl;
-            /* 2.读网络包数据 */
-            int data_size = pheader->dataSize - sizeof(NetPacketHeader);
-            char buf[data_size+1];
-            ret = recv(fd, buf, data_size, 0);
-            Register_Msg* re_msg = reinterpret_cast<Register_Msg*>(buf);
-            std::cout << re_msg->id << " " << re_msg->pw << std::endl;
-        }
+    /* 循环解包，解决粘包问题 */
+    while (1) {
+        /* 1.读网络包头 */
+        NetPacketHeader pheader;
+        ret = my_recv(fd, &pheader, sizeof(NetPacketHeader), MSG_DONTWAIT);  //非阻塞读取
+        if (ret > 0) {
+            switch (pheader.purpose) {
+            case Purpose::Register: {
+                std::cout << "Register" << std::endl;
+                /* 2.读网络包数据 */
+                Register_Msg re_msg;
+                ret = my_recv(fd, &re_msg, sizeof(Register_Msg), 0);
+                std::cout << re_msg.id << " " << re_msg.pw << std::endl;
+            }
             break;
-        default:
+            case Purpose::Heart: {
+//                std::cout << "心跳包" << std::endl;
+                unique_lock<mutex> lk(server_mutex);  //加锁
+                heart_check_map[fd].second = 0;
+                lk.unlock();
+            }
+            break;
+            default:
+                break;
+            }
+        } else if (ret == 0) {
+            /* 客户端断开连接，需要删除fd */
+            ret = getpeername(fd, (struct sockaddr*) &cliaddr, &cliaddr_len);
+            if (ret == -1) {
+                perror("getpeername error");
+            }
+            std::cout << "断开连接：" << inet_ntoa(cliaddr.sin_addr)
+                      << ":" << ntohs(cliaddr.sin_port) << std::endl;
+            ret = epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL);
+            if (ret == -1) {
+                perror("epoll_ctl error");
+            }
+            close(fd);
+            break;
+        } else {
+            /* 读取错误 */
+            perror("recv error");
             break;
         }
-    } else if (ret == 0) {
-        /* 客户端断开连接，需要删除fd */
-        ret = getpeername(fd, (struct sockaddr*) &cliaddr, &cliaddr_len);
-        if (ret == -1) {
-            perror("getpeername error");
-        }
-        std::cout << "断开连接：" << inet_ntoa(cliaddr.sin_addr)
-                  << ":" << ntohs(cliaddr.sin_port) << std::endl;
-        ret = epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL);
-        if (ret == -1) {
-            perror("epoll_ctl error");
-        }
-        close(fd);
-    } else {
-        /* 读取错误 */
-        perror("recv error");
     }
 }
 
 /* 参数：fd id password */
 void MyServer::do_register(int fd, const char *id, const char *password)
 {
-    if (myDatabase.get()->check_ID(id)) {
+    if (MyServer::myDatabase.check_ID(id)) {
         std::cout << "账号存在" << std::endl;
     } else std::cout << "账号不存在" << std::endl;
 }
