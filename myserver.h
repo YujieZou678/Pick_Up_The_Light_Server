@@ -20,6 +20,7 @@ using std::vector;
 class ThreadPool;  //前置声明
 class MyDataBase;
 class MyVedio;
+class NetPacketHeader;
 
 class MyServer
 {
@@ -37,14 +38,14 @@ private:
     vector<MyVedio> myVedio_vod_list;   //点播视频列表信息
 
     void handle_heart_event(int);    //处理心跳包事件(独立一个线程)
-    void handle_fd_event(int, int);  //处理一个fd的事件
+    void switch_purpose(int, int, NetPacketHeader&);  //目的分类
+    void handle_fd_event(int, int, NetPacketHeader);  //处理一个fd的事件
 
     /* 静态变量 */
     static MyDataBase myDatabase;  //数据库对象
     static ThreadPool threadPool;  //线程池对象
 
     /* 作为任务加入线程池 */
-    static void receive_file(int); //接收文件
     static void do_register(int fd,const char*,const char*);  //注册
 };
 

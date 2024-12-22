@@ -32,7 +32,7 @@ using std::vector;
 #define CHANGE_THREAD_NUMBER 2
 
 /* 线程池最小线程数 */
-#define MIN_THREAD_NUMBER 2
+#define MIN_THREAD_NUMBER 3
 
 /* 线程池最大线程数 */
 #define MAX_THREAD_NUMBER 10
@@ -42,6 +42,22 @@ using std::vector;
 
 /* 数据库密码 */
 #define DATABASE_PASSWORD ""
+
+template <typename T>  //删除数组
+inline void safe_delete(T *&target) {
+    if (nullptr != target) {
+        delete target;
+        target = nullptr;
+    }
+}
+
+template <typename T>  //删除数组指针
+inline void safe_delete_arr(T *&target) {
+    if (nullptr != target) {
+        delete[] target;
+        target = nullptr;
+    }
+}
 
 /* 评论结构体 */
 struct MyCommit
@@ -63,7 +79,8 @@ struct MyVedio
 /* 客户端请求枚举 */
 enum class Purpose {
     Heart,
-    Register
+    Register,
+    NewFile
 };
 
 /* 注册消息结构体 */
@@ -72,9 +89,17 @@ struct Register_Msg {
     char pw[20];
 };
 
+/* 文件信息 */
+struct FileInfo
+{
+    bool is_end;  //是否是最后一个包
+    char id[20];    //发送者
+};
+
 /* 网络数据包包头 */
 struct NetPacketHeader {
-    Purpose purpose;  //目的
+    Purpose purpose;        //目的
+    unsigned int file_size; //只是需要数据的长度
 };
 
 /* 函数的声明 */
