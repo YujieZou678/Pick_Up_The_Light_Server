@@ -6,11 +6,20 @@ include_directories(/usr/include/mysql/)  #add include directories
 
 add_executable(MyServer main.cpp
     myserver.h myserver.cpp
-
-    mydatabase.h mydatabase.cpp
-    config.h
+    dbbroker.h dbbroker.cpp
+    config.h config.cpp
     threadpool.h threadpool.cpp
-    config.cpp
+    userstatusevaluator.h userstatusevaluator.cpp
+    userinterface.h userinterface.cpp
+    userproxy.h userproxy.cpp
+    user.h user.cpp
+    commentinterface.h commentinterface.cpp
+    commentproxy.h commentproxy.cpp
+    comment.h comment.cpp
+    userbroker.h userbroker.cpp
+    commentbroker.h commentbroker.cpp
+    epolloperator.h epolloperator.cpp
+    processsinglerequestcontrol.h processsinglerequestcontrol.cpp
 )
 
 target_link_libraries( MyServer

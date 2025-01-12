@@ -35,7 +35,7 @@ void ThreadPool::add_task(Task &task)
     unique_lock<mutex> lk(this->poll_mutex);  //加锁
     if (this->shutdown) return;
     taskQ.push(task);
-    this->poll_cond.notify_all();  //唤醒线程执行
+    this->poll_cond.notify_one();  //唤醒线程执行
 }
 
 ThreadPool::~ThreadPool()

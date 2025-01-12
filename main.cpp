@@ -7,7 +7,7 @@ date: 2024.12.2
 
 int main(int argc, char* argv[])
 {
-    MyServer myServer("127.0.0.1", "2222");
+    MyServer myServer;
     myServer.launch();  //循环监听
     return 0;
 }

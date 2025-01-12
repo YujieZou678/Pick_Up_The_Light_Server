@@ -1,5 +1,5 @@
 /*
-func: 线程池类，声明了线程池的操作。
+func: 线程池，声明了线程池的操作。
 author: zouyujie
 date: 2024.12.2
 */
@@ -25,7 +25,7 @@ using Task = std::function<void()>;  //函数对象类型
 class ThreadPool
 {
 public:
-    ThreadPool(int min, int max);  //最小线程数，最大线程数
+    explicit ThreadPool(int min, int max);  //最小线程数，最大线程数
     template<class F,class... Args>
     void add_task(F &&f, Args&&... args) {  //完美转发(万能引用)
         Task task = std::bind(std::forward<F>(f), std::forward<Args>(args)...);

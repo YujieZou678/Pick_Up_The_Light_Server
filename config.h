@@ -59,23 +59,6 @@ inline void safe_delete_arr(T *&target) {
     }
 }
 
-/* 评论结构体 */
-struct MyCommit
-{
-    const char* str;
-    time_t send_date;     //发送时间
-    const char* send_id;  //上传的id
-};
-
-/* 视频结构体 */
-struct MyVedio
-{
-    vector<const char*> comments;  //评论
-    time_t send_date;     //上传时间
-    const char* send_id;  //上传的id
-    const char* url;      //视频地址
-};
-
 /* 客户端请求枚举 */
 enum class Purpose {
     Heart,
@@ -93,7 +76,8 @@ struct Register_Msg {
 struct FileInfo
 {
     bool is_end;  //是否是最后一个包
-    char id[20];    //发送者
+    char filetype[10];  //文件类型，如.txt
+    char id[20];  //id
 };
 
 /* 网络数据包包头 */

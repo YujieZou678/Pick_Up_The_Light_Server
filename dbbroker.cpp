@@ -1,14 +1,14 @@
 /*
-func: 数据库类的实现。
+func: 数据库经纪人的实现。
 author: zouyujie
 date: 2024.12.2
 */
-#include "mydatabase.h"
+#include "dbbroker.h"
 
 #include <string>
 using std::string;
 
-MyDataBase::MyDataBase(const char* accountNumber, const char* password)
+DbBroker::DbBroker(const char* accountNumber, const char* password)
 {
     if (conn.connect("Server", "localhost", accountNumber, password)) {
         std::cout << "DB Database: Successfully connect!" << std::endl;
@@ -19,14 +19,14 @@ MyDataBase::MyDataBase(const char* accountNumber, const char* password)
     }
 }
 
-MyDataBase::~MyDataBase()
+DbBroker::~DbBroker()
 {
     conn.disconnect();
     std::cout << std::endl;
     std::cout << "Successfully drop the connection!" << std::endl;
 }
 
-bool MyDataBase::check_ID(const char *id)
+bool DbBroker::check_ID(const char *id)
 {
     query.reset();
     query << "select ID from id_pw where ID = " << id;
@@ -39,34 +39,34 @@ bool MyDataBase::check_ID(const char *id)
     return false;
 }
 
-//bool MyDataBase::do_register(const char *accountNumber, const char *password)
+//bool DbBroker::do_register(const char *accountNumber, const char *password)
 //{
 //    if (check_ID(accountNumber)) cout << "exit" << endl;
 //    else cout << "inexit" << endl;
 //    return true;
 //}
 
-//bool MyDataBase::do_login()
+//bool DbBroker::do_login()
 //{
 
 //}
 
-//bool MyDataBase::get_info_vod()
+//bool DbBroker::get_info_vod()
 //{
 
 //}
 
-//bool MyDataBase::add_info_vod()
+//bool DbBroker::add_info_vod()
 //{
 
 //}
 
-//bool MyDataBase::update_info_vod()
+//bool DbBroker::update_info_vod()
 //{
 
 //}
 
-//bool MyDataBase::remove_info_vod()
+//bool DbBroker::remove_info_vod()
 //{
 
 //}
