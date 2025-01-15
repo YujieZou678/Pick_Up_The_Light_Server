@@ -13,6 +13,9 @@ using std::string;
 #include <fstream>
 using std::ofstream;
 
+#include "nlohmann/json.hpp"
+using json = nlohmann::json;
+
 #include "epolloperator.h"
 #include "config.h"
 
@@ -31,16 +34,17 @@ ProcessSingleRequestControl *ProcessSingleRequestControl::getInstance()
     return m_instance;
 }
 
-void ProcessSingleRequestControl::processSingleRequest(int fd, const shared_ptr<EpollOperator> &epollOperator, NetPacketHeader &pheader)
+void ProcessSingleRequestControl::processSingleRequest(int fd, NetPacketHeader &pheader)
 {
     int ret = 0;
     switch (pheader.purpose) {
     case Purpose::Register: {
         std::cout << std::this_thread::get_id() << ": Register" << std::endl;
-        /* 2.读网络包数据 */
-        Register_Msg re_msg;
-        ret = my_recv(fd, &re_msg, pheader.file_size, 0);
-        std::cout << re_msg.id << " " << re_msg.pw << std::endl;
+        /* 2.读数据包 */
+        char buf[BUF_SIZE];
+        ret = my_recv(fd, buf, pheader.data_size, 0);
+        json jsonMsg = json::parse(buf);
+        std::cout << jsonMsg["id"] << " " << jsonMsg["password"] << std::endl;
     }
     break;
     case Purpose::Heart: {
@@ -49,24 +53,25 @@ void ProcessSingleRequestControl::processSingleRequest(int fd, const shared_ptr<
     break;
     case Purpose::NewFile: {
         std::cout << "NewFile" << std::endl;
-        /* 2.读网络包数据=信息包+数据包 */
-        /* 信息包 */
-        FileInfo file_info;
-        ret = my_recv(fd, &file_info, sizeof(FileInfo), 0);  //阻塞读取文件信息
-        /* 数据包 */
-        unsigned int data_len = pheader.file_size;  //数据大小
-        char* buf = new char[data_len+1];  //申请内存
-        ret = my_recv(fd, buf, data_len, 0);  //阻塞读取文件
+        /* 2.读文件数据包=文件信息+文件数据 */
+        /* 文件信息 */
+        char buf[BUF_SIZE+1];
+        ret = my_recv(fd, buf, BUF_SIZE, 0);  //阻塞读取文件信息
+        json jsonMsg = json::parse(buf);
+        /* 文件数据 */
+        unsigned int data_size = pheader.data_size;  //数据大小
+        char* file_buf = new char[data_size+1];  //申请内存
+        ret = my_recv(fd, file_buf, data_size, 0);  //阻塞读取文件
         std::cout << ret << std::endl;
         /* 将数据写入文件 */
-        string filename = string("/root/my_test/Server/test") + file_info.filetype;
-        ofstream ofs(filename, std::ios::out|std::ios::app);  //追加写入
-        ofs.write(buf, data_len);
+        string filepath = string("/root/my_test/Server/test") + string(jsonMsg["filetype"]);
+        ofstream ofs(filepath);  //覆盖写入
+        ofs.write(file_buf, data_size);
         ofs.close();  //关闭文件
-        safe_delete_arr(buf);  //释放内存
+        safe_delete_arr(file_buf);  //释放内存
 
         /* 重新加入epoll */
-        epollOperator.get()->addFd(fd, EPOLLIN|EPOLLET);
+        EpollOperator::getInstance()->addFd(fd, EPOLLIN|EPOLLET);
     }
     break;
     default:

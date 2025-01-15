@@ -21,10 +21,12 @@ add_executable(MyServer main.cpp
     epolloperator.h epolloperator.cpp
     processsinglerequestcontrol.h processsinglerequestcontrol.cpp
 )
+add_subdirectory(json)
 
 target_link_libraries( MyServer
     PUBLIC
         libmysqlpp.so.3.3.0
+        nlohmann_json
 )
 
 target_compile_features( MyServer PRIVATE cxx_std_20 )

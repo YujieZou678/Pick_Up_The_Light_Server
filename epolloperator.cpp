@@ -11,6 +11,8 @@ date: 2025.1.10
 
 #include "config.h"
 
+EpollOperator *EpollOperator::m_instance = nullptr;
+
 EpollOperator::EpollOperator()
 {
     /* 创建 */
@@ -21,13 +23,21 @@ EpollOperator::EpollOperator()
     }
 }
 
-EpollOperator::~EpollOperator()
+//EpollOperator::~EpollOperator()
+//{
+//    /* 关闭 */
+//    if (close(m_epollFd) == -1) {
+//        perror("close m_epollFd error");
+//        exit(1);
+//    }
+//}
+
+EpollOperator *EpollOperator::getInstance()
 {
-    /* 关闭 */
-    if (close(m_epollFd) == -1) {
-        perror("close m_epollFd error");
-        exit(1);
+    if (m_instance == nullptr) {
+        m_instance = new EpollOperator();
     }
+    return m_instance;
 }
 
 void EpollOperator::addFd(int fd, uint32_t events)

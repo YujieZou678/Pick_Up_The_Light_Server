@@ -28,8 +28,9 @@ public:
 
 private:
     shared_ptr<ThreadPool> m_threadPool;  //线程池对象
-    shared_ptr<EpollOperator> m_epollOperator;  //epoll操作对象(会成为共享资源传入各个线程)
     shared_ptr<UserStatusEvaluator> m_userStatusEvaluator;  //用户连接状态评估对象
+
+    EpollOperator *m_epollOperator;  //epoll操作对象
     ProcessSingleRequestControl *m_processSingleRequestControl;
 };
 

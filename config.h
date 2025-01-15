@@ -25,8 +25,11 @@ using std::vector;
 /* epoll超时设置 */
 #define EPOLL_TIME_OUT -1
 
-/* 一次接收消息最大内存 */
-#define MAX_ONCE_RECV 1024
+/* 普通数据包 */
+#define BUF_SIZE 1024
+
+/* 文件数据包 1G */
+#define FILE_BUF_SIZE 1024*1024*1024
 
 /* 线程池一次销毁或增加线程数 */
 #define CHANGE_THREAD_NUMBER 2
@@ -43,7 +46,7 @@ using std::vector;
 /* 数据库密码 */
 #define DATABASE_PASSWORD ""
 
-template <typename T>  //删除数组
+template <typename T>  //删除指针
 inline void safe_delete(T *&target) {
     if (nullptr != target) {
         delete target;
@@ -66,24 +69,10 @@ enum class Purpose {
     NewFile
 };
 
-/* 注册消息结构体 */
-struct Register_Msg {
-    char id[20];
-    char pw[20];
-};
-
-/* 文件信息 */
-struct FileInfo
-{
-    bool is_end;  //是否是最后一个包
-    char filetype[10];  //文件类型，如.txt
-    char id[20];  //id
-};
-
-/* 网络数据包包头 */
+/* 网络包包头 */
 struct NetPacketHeader {
-    Purpose purpose;        //目的
-    unsigned int file_size; //只是需要数据的长度
+    Purpose purpose;         //目的
+    unsigned int data_size;  //数据长度
 };
 
 /* 函数的声明 */

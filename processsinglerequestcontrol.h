@@ -16,7 +16,7 @@ class ProcessSingleRequestControl
 {
 public:
     static ProcessSingleRequestControl *getInstance();
-    void processSingleRequest(int fd, const shared_ptr<EpollOperator> &epollOperator, NetPacketHeader &pheader);
+    void processSingleRequest(int fd, NetPacketHeader &pheader);
 
 private:
     ProcessSingleRequestControl();
