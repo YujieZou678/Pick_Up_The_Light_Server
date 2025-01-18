@@ -15,6 +15,7 @@ using std::ofstream;
 
 #include "threadpool.h"
 #include "epolloperator.h"
+#include "userstatusevaluator.h"
 #include "processsinglerequestcontrol.h"
 #include "config.h"
 
@@ -24,6 +25,7 @@ MyServer::MyServer()
 
     /* 单例初始化，保证线程安全 */
     m_epollOperator = EpollOperator::getInstance();
+    m_userStatusEvaluator = UserStatusEvaluator::getInstance();
     m_processSingleRequestControl = ProcessSingleRequestControl::getInstance();
 }
 
@@ -87,10 +89,8 @@ void MyServer::launch()
                     std::cout << "新连接：" << inet_ntoa(cliaddr.sin_addr)
                               << ":" << ntohs(cliaddr.sin_port) << std::endl;
                     /* 心跳 */
-//                    string addr = inet_ntoa(cliaddr.sin_addr) + ntohs(cliaddr.sin_port);
-//                    unique_lock<mutex> lk(server_mutex);  //加锁
-//                    heart_check_map.insert(make_pair(new_fd, make_pair(addr, 0)));
-//                    lk.unlock();  //解锁
+                    string addr = inet_ntoa(cliaddr.sin_addr) + ntohs(cliaddr.sin_port);
+                    m_userStatusEvaluator->add(new_fd, addr);
                     /* epoll */
                     m_epollOperator->addFd(new_fd, EPOLLIN|EPOLLET);  //可读事件+边缘模式
                 }
@@ -103,7 +103,11 @@ void MyServer::launch()
                         /* 客户端断开连接，需要删除fd */
                         std::cout << "断开连接：" << inet_ntoa(cliaddr.sin_addr)
                                   << ":" << ntohs(cliaddr.sin_port) << std::endl;
+                        /* 心跳 */
+                        m_userStatusEvaluator->remove(fd);
+                        /* epoll */
                         m_epollOperator->deleteFd(fd);
+                        /* close */
                         close(fd);
                         continue;
                     }
@@ -150,51 +154,6 @@ void MyServer::processClientRequest(int fd, NetPacketHeader pheader)
         }
     }
 }
-
-//void MyServer::handle_heart_event(int epoll_fd)
-//{
-//    std::cout << "the heartbeat check thread start..." << std::endl;
-//    /* 每3秒轮询检测一次心跳包情况 */
-//    while (1) {
-//        map<int,pair<string,int>>::iterator it = heart_check_map.begin();
-//        for (it; it!=heart_check_map.end(); it++) {
-//            pair<int,pair<string,int>> data = *it;
-//            if (data.second.second == 3) {  //连续3次检测没有心跳包，则判定客户端断开
-//                std::cout << "The client " << data.second.first << " has been offline..." << std::endl;
-//                int fd = data.first;
-//                close(fd);
-//                /* 心跳 */
-//                unique_lock<mutex> lk(server_mutex);  //加锁
-//                heart_check_map.erase(it++);
-//                lk.unlock();
-//                /* epoll */
-//                if (epoll_ctl(epoll_fd, EPOLL_CTL_DEL, fd, NULL) == -1) {
-//                    perror("epoll_ctl error");
-//                }
-//            } else if (data.second.second < 3 && data.second.second >= 0) {
-//                data.second.second += 1;
-//                ++it;
-//            }
-//        }
-
-//        std::this_thread::sleep_for(std::chrono::seconds(3));
-//    }
-//}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -43,6 +43,7 @@ void ProcessSingleRequestControl::processSingleRequest(int fd, NetPacketHeader &
         /* 2.读数据包 */
         char buf[BUF_SIZE];
         ret = my_recv(fd, buf, pheader.data_size, 0);
+        if (ret==-1 || ret==0) return;
         json jsonMsg = json::parse(buf);
         std::cout << jsonMsg["id"] << " " << jsonMsg["password"] << std::endl;
     }
@@ -63,6 +64,7 @@ void ProcessSingleRequestControl::processSingleRequest(int fd, NetPacketHeader &
         char* file_buf = new char[data_size+1];  //申请内存
         ret = my_recv(fd, file_buf, data_size, 0);  //阻塞读取文件
         std::cout << ret << std::endl;
+        if (ret==-1 || ret==0) return;
         /* 将数据写入文件 */
         string filepath = string("/root/my_test/Server/test") + string(jsonMsg["filetype"]);
         ofstream ofs(filepath);  //覆盖写入
