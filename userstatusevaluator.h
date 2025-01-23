@@ -20,12 +20,12 @@ class UserStatusEvaluator
 public:
     static UserStatusEvaluator *getInstance();
     void start();  //独立线程监测当前数据
-    void add(int fd, string &ip);    //增加数据
-    void remove(int fd); //移除数据
+    void add(int fd, string &ip);  //增加数据
+    void remove(int fd);  //移除数据
+    void set_0(int fd);   //评估数据置0
 
 private:
     UserStatusEvaluator();
-    static UserStatusEvaluator *m_instance;
 
     mutex m_mutex;
     unordered_map<int,pair<string,int>> m_map;  //数据 fd : (ip : 0-3)

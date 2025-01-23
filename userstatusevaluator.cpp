@@ -11,18 +11,14 @@ using std::thread;
 
 #include "epolloperator.h"
 
-UserStatusEvaluator *UserStatusEvaluator::m_instance = nullptr;
-
 UserStatusEvaluator::UserStatusEvaluator()
 {
 }
 
 UserStatusEvaluator *UserStatusEvaluator::getInstance()
 {
-    if (m_instance == nullptr) {
-        m_instance = new UserStatusEvaluator();
-    }
-    return m_instance;
+    static UserStatusEvaluator instance;  //局部静态变量初始化线程安全 C++11
+    return &instance;
 }
 
 void UserStatusEvaluator::start()
@@ -33,31 +29,31 @@ void UserStatusEvaluator::start()
         unordered_map<int,pair<string,int>>::iterator it;
         /* 每3秒轮询检测一次心跳包情况 */
         while (1) {
-            it = m_map.begin();
-            for (it; it!=m_map.end(); it++) {
+            unique_lock<mutex> lk(m_mutex);  //加锁
+            auto map_copy = m_map;  //拷贝，遍历只读
+            it = map_copy.begin();
+            for (it; it!=map_copy.end(); it++) {
                 pair<int,pair<string,int>> data = *it;
+                int fd = data.first;
                 if (data.second.second == 3) {  //连续3次检测没有心跳包，则判定客户端断开
-                    std::cout << "UserStatusEvaluator：The client " << data.second.first
+                    std::cerr << "UserStatusEvaluator：The client " << data.second.first
                               << " has been offline..." << std::endl;
-                    int fd = data.first;
                     /* 心跳 */
-                    unique_lock<mutex> lk(m_mutex);
-                    m_map.erase(it++);
-                    lk.unlock();
+                    m_map.erase(fd);
                     /* epoll */
                     EpollOperator::getInstance()->deleteFd(fd);
                     /* close */
                     close(fd);
                 } else if (data.second.second < 3 && data.second.second >= 0) {
-                    data.second.second += 1;
-                    ++it;
+                    m_map.at(fd).second += 1;
                 }
             }
+            lk.unlock();  //解锁
 
             std::this_thread::sleep_for(std::chrono::seconds(3));
         }
     });
-//    t.join();
+    t.detach();
 }
 
 void UserStatusEvaluator::add(int fd, string &ip)
@@ -69,7 +65,13 @@ void UserStatusEvaluator::add(int fd, string &ip)
 void UserStatusEvaluator::remove(int fd)
 {
     unique_lock<mutex> lk(m_mutex);
-    m_map.erase(m_map.find(fd));
+    m_map.erase(fd);
+}
+
+void UserStatusEvaluator::set_0(int fd)
+{
+    unique_lock<mutex> lk(m_mutex);
+    m_map.at(fd).second = 0;
 }
 
 

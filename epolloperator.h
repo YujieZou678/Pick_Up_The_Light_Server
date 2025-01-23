@@ -18,7 +18,6 @@ public:
 
 private:
     EpollOperator();
-    static EpollOperator *m_instance;
 
     int m_epollFd;
 };

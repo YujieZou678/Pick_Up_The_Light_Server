@@ -11,8 +11,6 @@ date: 2025.1.10
 
 #include "config.h"
 
-EpollOperator *EpollOperator::m_instance = nullptr;
-
 EpollOperator::EpollOperator()
 {
     /* 创建 */
@@ -34,10 +32,8 @@ EpollOperator::EpollOperator()
 
 EpollOperator *EpollOperator::getInstance()
 {
-    if (m_instance == nullptr) {
-        m_instance = new EpollOperator();
-    }
-    return m_instance;
+    static EpollOperator instance;  //局部静态变量初始化线程安全 C++11
+    return &instance;
 }
 
 void EpollOperator::addFd(int fd, uint32_t events)

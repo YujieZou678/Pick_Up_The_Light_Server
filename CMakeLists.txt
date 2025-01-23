@@ -16,10 +16,10 @@ add_executable(MyServer main.cpp
     commentinterface.h commentinterface.cpp
     commentproxy.h commentproxy.cpp
     comment.h comment.cpp
-    userbroker.h userbroker.cpp
-    commentbroker.h commentbroker.cpp
     epolloperator.h epolloperator.cpp
-    processsinglerequestcontrol.h processsinglerequestcontrol.cpp
+    snowflakeidworker.h snowflakeidworker.cpp
+    initcontrol.h initcontrol.cpp
+    netpacketgenerator.h netpacketgenerator.cpp
 )
 add_subdirectory(json)
 

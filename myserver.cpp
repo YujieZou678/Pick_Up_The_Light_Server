@@ -13,20 +13,25 @@ date: 2024.12.2
 #include <fstream>
 using std::ofstream;
 
+#include "nlohmann/json.hpp"
+using json = nlohmann::json;
+
 #include "threadpool.h"
 #include "epolloperator.h"
 #include "userstatusevaluator.h"
-#include "processsinglerequestcontrol.h"
+#include "netpacketgenerator.h"
+#include "initcontrol.h"
 #include "config.h"
 
 MyServer::MyServer()
 {
     m_threadPool = make_shared<ThreadPool>(MIN_THREAD_NUMBER, MAX_THREAD_NUMBER);
 
-    /* 单例初始化，保证线程安全 */
+    /* 单例初始化 */
     m_epollOperator = EpollOperator::getInstance();
     m_userStatusEvaluator = UserStatusEvaluator::getInstance();
-    m_processSingleRequestControl = ProcessSingleRequestControl::getInstance();
+    m_initControl = InitControl::getInstance();
+    m_netPacketGenerator = NetPacketGenerator::getInstance();
 }
 
 MyServer::~MyServer()
@@ -36,7 +41,7 @@ MyServer::~MyServer()
 void MyServer::launch()
 {
     /* 启动心跳包检测线程 */
-    //
+    m_userStatusEvaluator->getInstance()->start();
 
     /* 启动服务器 */
     int listen_fd;
@@ -86,11 +91,12 @@ void MyServer::launch()
                         perror("accept error");
                         continue;
                     }
-                    std::cout << "新连接：" << inet_ntoa(cliaddr.sin_addr)
-                              << ":" << ntohs(cliaddr.sin_port) << std::endl;
+                    string addr = inet_ntoa(cliaddr.sin_addr);
+                    string port = std::to_string(ntohs(cliaddr.sin_port));
+                    string ip = addr+":"+port;
+                    std::cout << "新连接：" << ip << std::endl;
                     /* 心跳 */
-                    string addr = inet_ntoa(cliaddr.sin_addr) + ntohs(cliaddr.sin_port);
-                    m_userStatusEvaluator->add(new_fd, addr);
+                    m_userStatusEvaluator->add(new_fd, ip);
                     /* epoll */
                     m_epollOperator->addFd(new_fd, EPOLLIN|EPOLLET);  //可读事件+边缘模式
                 }
@@ -110,7 +116,7 @@ void MyServer::launch()
                         /* close */
                         close(fd);
                         continue;
-                    }
+                    } else if (ret == -1) continue;  //有概率没触发断开而读取失败(UserStatusEvaluator发挥作用)
                     /* 有数据 */
                     if (pheader.purpose == Purpose::NewFile) {
                         m_epollOperator->deleteFd(fd);
@@ -131,11 +137,62 @@ void MyServer::launch()
     }  // 循环
 }
 
+void MyServer::processSingleRequest(int fd, NetPacketHeader &pheader)
+{
+    int ret = 0;
+    switch (pheader.purpose) {
+    case Purpose::Register: {
+        std::cout << std::this_thread::get_id() << ": Register" << std::endl;
+        /* 2.读数据包 */
+        char buf[BUF_SIZE];
+        memset(buf, 0, sizeof(buf));
+        ret = my_recv(fd, buf, pheader.data_size, 0);
+        if (ret==-1 || ret==0) return;
+        /* 注册并返回结果 */
+        NetPacket p = m_netPacketGenerator->register_P(m_initControl->do_register(buf));
+        my_send(fd, &p, sizeof(NetPacketHeader)+p.packetHeader.data_size, 0);
+    }
+    break;
+    case Purpose::Heart: {
+        std::cout << "心跳包" << std::endl;
+        /* 当前连接评估状态置0 */
+        m_userStatusEvaluator->set_0(fd);
+    }
+    break;
+    case Purpose::NewFile: {
+        std::cout << "NewFile" << std::endl;
+        /* 2.读文件数据包=文件信息+文件数据 */
+        /* 文件信息 */
+        char buf[BUF_SIZE+1];
+        ret = my_recv(fd, buf, BUF_SIZE, 0);  //阻塞读取文件信息
+        json jsonMsg = json::parse(buf);
+        /* 文件数据 */
+        unsigned int data_size = pheader.data_size;  //数据大小
+        char* file_buf = new char[data_size+1];  //申请堆内存
+        ret = my_recv(fd, file_buf, data_size, 0);  //阻塞读取文件
+        std::cout << ret << std::endl;
+        if (ret==-1 || ret==0) return;
+        /* 将数据写入文件 */
+        string filepath = string("/root/my_test/Server/test") + string(jsonMsg["filetype"]);
+        ofstream ofs(filepath);  //覆盖写入
+        ofs.write(file_buf, data_size);
+        ofs.close();  //关闭文件
+        safe_delete_arr(file_buf);  //释放内存
+
+        /* 重新加入epoll */
+        EpollOperator::getInstance()->addFd(fd, EPOLLIN|EPOLLET);
+    }
+    break;
+    default:
+        break;
+    }
+}
+
 void MyServer::processClientRequest(int fd, NetPacketHeader pheader)
 {
     int ret = 0;
     /* 先处理第一个网络包 */
-    m_processSingleRequestControl->processSingleRequest(fd, pheader);
+    processSingleRequest(fd, pheader);
     /* 循环解包，解决粘包问题 */
     while (1) {
         /* 1.读网络包包头 */
@@ -146,7 +203,7 @@ void MyServer::processClientRequest(int fd, NetPacketHeader pheader)
             if (pheader.purpose == Purpose::NewFile) {
                 m_epollOperator->deleteFd(fd);
             }
-            m_processSingleRequestControl->processSingleRequest(fd, pheader);
+            processSingleRequest(fd, pheader);
         } else if (ret == -1) {
             /* 读取错误，没数据 */
             perror("recv error");

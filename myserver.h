@@ -15,8 +15,9 @@ using std::make_shared;
 class ThreadPool;
 class UserStatusEvaluator;
 class EpollOperator;
-class ProcessSingleRequestControl;
 struct NetPacketHeader;
+class InitControl;
+class NetPacketGenerator;
 
 class MyServer
 {
@@ -24,13 +25,16 @@ public:
     MyServer();
     ~MyServer();
     void launch();  //启动服务器
-    void processClientRequest(int fd, NetPacketHeader pheader);  //处理客户端请求
+    void processSingleRequest(int fd, NetPacketHeader &pheader); //处理单个请求
+    void processClientRequest(int fd, NetPacketHeader pheader);  //循环处理客户端请求
 
 private:
     shared_ptr<ThreadPool> m_threadPool;  //线程池对象
     EpollOperator *m_epollOperator;  //epoll操作对象
     UserStatusEvaluator *m_userStatusEvaluator;  //用户连接状态评估者
-    ProcessSingleRequestControl *m_processSingleRequestControl;
+    NetPacketGenerator *m_netPacketGenerator;    //网络包生成器
+
+    InitControl *m_initControl;
 };
 
 #endif // MYSERVER_H

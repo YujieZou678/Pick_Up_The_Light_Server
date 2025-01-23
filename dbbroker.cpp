@@ -5,68 +5,60 @@ date: 2024.12.2
 */
 #include "dbbroker.h"
 
-#include <string>
-using std::string;
+#include <iostream>
+using std::cout;
+using std::cerr;
+using std::endl;
 
-DbBroker::DbBroker(const char* accountNumber, const char* password)
+DbBroker::DbBroker() :
+    m_conn(false)
 {
-    if (conn.connect("Server", "localhost", accountNumber, password)) {
-        std::cout << "DB Database: Successfully connect!" << std::endl;
+    if (m_conn.connect("Server", "localhost", "root", "")) {
+        std::cout << "DB: Successfully connect!" << std::endl;
     }
     else {
-        perror("DB Database: connection failed");
+        perror("DB: connection failed");
         exit(1);
     }
 }
 
-DbBroker::~DbBroker()
+//DbBroker::~DbBroker()
+//{
+//    conn.disconnect();
+//    std::cout << std::endl;
+//    std::cout << "Successfully drop the connection!" << std::endl;
+//}
+
+DbBroker *DbBroker::getInstance()
 {
-    conn.disconnect();
-    std::cout << std::endl;
-    std::cout << "Successfully drop the connection!" << std::endl;
+    static DbBroker instance;  //局部静态变量初始化线程安全 C++11
+    return &instance;
 }
 
-bool DbBroker::check_ID(const char *id)
+void DbBroker::initDataBase()
 {
-    query.reset();
-    query << "select ID from id_pw where ID = " << id;
-    res = query.store();
+    string command;
+    /* 创建表User */
+    command = "create table User(id varchar(20), pw varchar(30), nickName varchar(30))";
+    query_execute(command);
 
-    if (res != NULL) {
-        if (res.begin() == res.end()) return false;
-        else return true;
-    } else std::cout << "The table is inexistent!" << std::endl;
+    cout << "DB: Successfully init!" << endl;
+}
+
+bool DbBroker::query_execute(const string &command)
+{
+    mysqlpp::Query query = m_conn.query(command);  //执行对象
+    if (query.execute()) return true;
+    cerr << "query.execute() failed: " << query.error() << endl;
     return false;
 }
 
-//bool DbBroker::do_register(const char *accountNumber, const char *password)
-//{
-//    if (check_ID(accountNumber)) cout << "exit" << endl;
-//    else cout << "inexit" << endl;
-//    return true;
-//}
+mysqlpp::StoreQueryResult DbBroker::query_store(const string &command)
+{
+    mysqlpp::Query query = m_conn.query(command);  //执行对象
+    mysqlpp::StoreQueryResult res;  //结果集
+    res = query.store();
+    return res;
+}
 
-//bool DbBroker::do_login()
-//{
 
-//}
-
-//bool DbBroker::get_info_vod()
-//{
-
-//}
-
-//bool DbBroker::add_info_vod()
-//{
-
-//}
-
-//bool DbBroker::update_info_vod()
-//{
-
-//}
-
-//bool DbBroker::remove_info_vod()
-//{
-
-//}
