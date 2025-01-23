@@ -36,6 +36,9 @@ date: 2024.12.2
 /* 线程池最大线程数 */
 #define MAX_THREAD_NUMBER 10
 
+/* 用户头像存储地址 */
+#define PROFILE_PICTURE_URL "/root/my_test/Server/cache/"
+
 template <typename T>  //删除指针
 inline void safe_delete(T *&target) {
     if (nullptr != target) {
@@ -57,6 +60,12 @@ enum class Purpose {
     Heart,
     Register,
     NewFile
+};
+
+/* 文件类型 */
+enum class FileType {
+    ProfilePicture,
+    Video
 };
 
 /* 网络包包头 */

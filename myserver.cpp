@@ -170,17 +170,21 @@ void MyServer::processSingleRequest(int fd, NetPacketHeader &pheader)
         unsigned int data_size = pheader.data_size;  //数据大小
         char* file_buf = new char[data_size+1];  //申请堆内存
         ret = my_recv(fd, file_buf, data_size, 0);  //阻塞读取文件
+        /* 重新加入epoll */
+        EpollOperator::getInstance()->addFd(fd, EPOLLIN|EPOLLET);
         std::cout << ret << std::endl;
         if (ret==-1 || ret==0) return;
+
         /* 将数据写入文件 */
-        string filepath = string("/root/my_test/Server/test") + string(jsonMsg["filetype"]);
+        string dirpath;
+        if (jsonMsg["filetype"] == FileType::ProfilePicture) dirpath = PROFILE_PICTURE_URL;
+        string filepath = dirpath + string(jsonMsg["id"]) +string(jsonMsg["suffix"]);
         ofstream ofs(filepath);  //覆盖写入
         ofs.write(file_buf, data_size);
         ofs.close();  //关闭文件
         safe_delete_arr(file_buf);  //释放内存
-
-        /* 重新加入epoll */
-        EpollOperator::getInstance()->addFd(fd, EPOLLIN|EPOLLET);
+        /* 返回结果 */
+        //
     }
     break;
     default:
