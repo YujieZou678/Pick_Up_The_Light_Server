@@ -59,7 +59,8 @@ inline void safe_delete_arr(T *&target) {
 enum class Purpose {
     Heart,
     Register,
-    NewFile
+    SendFile,
+    GetFile
 };
 
 /* 文件类型 */

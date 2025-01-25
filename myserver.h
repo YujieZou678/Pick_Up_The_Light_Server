@@ -26,7 +26,7 @@ public:
     ~MyServer();
     void launch();  //启动服务器
     void processSingleRequest(int fd, NetPacketHeader &pheader); //处理单个请求
-    void processClientRequest(int fd, NetPacketHeader pheader);  //循环处理客户端请求
+    void processClientRequest(int fd);  //循环处理客户端请求
 
 private:
     shared_ptr<ThreadPool> m_threadPool;  //线程池对象

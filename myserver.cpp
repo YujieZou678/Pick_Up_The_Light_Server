@@ -101,28 +101,10 @@ void MyServer::launch()
                     m_epollOperator->addFd(new_fd, EPOLLIN|EPOLLET);  //可读事件+边缘模式
                 }
                 else {
-                    /* 可读事件(有数据或断开)，这里要读取包头 */
-                    int ret;
-                    NetPacketHeader pheader;
-                    ret = my_recv(fd, &pheader, sizeof(NetPacketHeader), MSG_DONTWAIT);  //非阻塞模式读取
-                    if (ret == 0) {
-                        /* 客户端断开连接，需要删除fd */
-                        std::cout << "断开连接：" << inet_ntoa(cliaddr.sin_addr)
-                                  << ":" << ntohs(cliaddr.sin_port) << std::endl;
-                        /* 心跳 */
-                        m_userStatusEvaluator->remove(fd);
-                        /* epoll */
-                        m_epollOperator->deleteFd(fd);
-                        /* close */
-                        close(fd);
-                        continue;
-                    } else if (ret == -1) continue;  //有概率没触发断开而读取失败(UserStatusEvaluator发挥作用)
-                    /* 有数据 */
-                    if (pheader.purpose == Purpose::NewFile) {
-                        m_epollOperator->deleteFd(fd);
-                    }
+                    /* 可读事件(有数据或断开) */
+                    m_epollOperator->deleteFd(fd);  //取掉监听
                     /* 传入子线程 */
-                    Task new_fd_task = std::bind(&MyServer::processClientRequest, this, fd, pheader);
+                    Task new_fd_task = std::bind(&MyServer::processClientRequest, this, fd);
                     m_threadPool.get()->add_task(new_fd_task);
                 }
             }
@@ -142,12 +124,12 @@ void MyServer::processSingleRequest(int fd, NetPacketHeader &pheader)
     int ret = 0;
     switch (pheader.purpose) {
     case Purpose::Register: {
-        std::cout << std::this_thread::get_id() << ": Register" << std::endl;
+        std::cout << "Register" << std::endl;
         /* 2.读数据包 */
         char buf[BUF_SIZE];
         memset(buf, 0, sizeof(buf));
         ret = my_recv(fd, buf, pheader.data_size, 0);
-        if (ret==-1 || ret==0) return;
+        if (ret==-1 || ret==0 || ret!=pheader.data_size) return;
         /* 注册并返回结果 */
         NetPacket p = m_netPacketGenerator->register_P(m_initControl->do_register(buf));
         my_send(fd, &p, sizeof(NetPacketHeader)+p.packetHeader.data_size, 0);
@@ -159,32 +141,37 @@ void MyServer::processSingleRequest(int fd, NetPacketHeader &pheader)
         m_userStatusEvaluator->set_0(fd);
     }
     break;
-    case Purpose::NewFile: {
+    case Purpose::SendFile: {
         std::cout << "NewFile" << std::endl;
         /* 2.读文件数据包=文件信息+文件数据 */
         /* 文件信息 */
         char buf[BUF_SIZE+1];
         ret = my_recv(fd, buf, BUF_SIZE, 0);  //阻塞读取文件信息
+        if (ret==-1 || ret==0 || ret!=BUF_SIZE) return;
         json jsonMsg = json::parse(buf);
         /* 文件数据 */
-        unsigned int data_size = pheader.data_size;  //数据大小
-        char* file_buf = new char[data_size+1];  //申请堆内存
-        ret = my_recv(fd, file_buf, data_size, 0);  //阻塞读取文件
-        /* 重新加入epoll */
-        EpollOperator::getInstance()->addFd(fd, EPOLLIN|EPOLLET);
+        char* file_buf = new char[pheader.data_size+1];  //申请堆内存
+        ret = my_recv(fd, file_buf, pheader.data_size, 0);  //阻塞读取文件
         std::cout << ret << std::endl;
-        if (ret==-1 || ret==0) return;
-
+        if (ret==-1 || ret==0 || ret!=pheader.data_size) return;
         /* 将数据写入文件 */
         string dirpath;
         if (jsonMsg["filetype"] == FileType::ProfilePicture) dirpath = PROFILE_PICTURE_URL;
         string filepath = dirpath + string(jsonMsg["id"]) +string(jsonMsg["suffix"]);
         ofstream ofs(filepath);  //覆盖写入
-        ofs.write(file_buf, data_size);
+        ofs.write(file_buf, pheader.data_size);
         ofs.close();  //关闭文件
         safe_delete_arr(file_buf);  //释放内存
-        /* 返回结果 */
-        //
+    }
+    break;
+    case Purpose::GetFile: {
+        std::cout << std::this_thread::get_id() << "GetFile" << std::endl;
+        /* 2.读数据包 */
+        char buf[BUF_SIZE];
+        memset(buf, 0, sizeof(buf));
+        ret = my_recv(fd, buf, pheader.data_size, 0);
+        if (ret==-1 || ret==0 || ret!=pheader.data_size) return;
+        std::cout << buf << std::endl;
     }
     break;
     default:
@@ -192,11 +179,9 @@ void MyServer::processSingleRequest(int fd, NetPacketHeader &pheader)
     }
 }
 
-void MyServer::processClientRequest(int fd, NetPacketHeader pheader)
+void MyServer::processClientRequest(int fd)
 {
-    int ret = 0;
-    /* 先处理第一个网络包 */
-    processSingleRequest(fd, pheader);
+    int ret;
     /* 循环解包，解决粘包问题 */
     while (1) {
         /* 1.读网络包包头 */
@@ -204,13 +189,23 @@ void MyServer::processClientRequest(int fd, NetPacketHeader pheader)
         ret = my_recv(fd, &pheader, sizeof(NetPacketHeader), MSG_DONTWAIT);  //非阻塞读取
         if (ret > 0) {
             /* 有数据 */
-            if (pheader.purpose == Purpose::NewFile) {
-                m_epollOperator->deleteFd(fd);
-            }
+            if (ret != sizeof(NetPacketHeader)) return;
             processSingleRequest(fd, pheader);
         } else if (ret == -1) {
             /* 读取错误，没数据 */
             perror("recv error");
+            /* 重新加入监听 */
+            EpollOperator::getInstance()->addFd(fd, EPOLLIN|EPOLLET);
+            break;
+        } else if (ret == 0) {
+            /* 断开连接 */
+            std::cout << "断开连接：" << m_userStatusEvaluator->get_ip(fd) << std::endl;
+            /* 心跳 */
+            m_userStatusEvaluator->remove(fd);
+            /* epoll */
+            m_epollOperator->deleteFd(fd);
+            /* close */
+            close(fd);
             break;
         }
     }

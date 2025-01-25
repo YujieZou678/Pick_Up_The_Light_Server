@@ -11,9 +11,14 @@ using std::unordered_map;
 using std::pair;
 #include <string>
 using std::string;
-#include <mutex>
-using std::mutex;
-using std::unique_lock;
+#include <shared_mutex>
+using std::shared_mutex;
+using std::shared_lock;
+
+struct Info {
+    string ip;  //ip地址
+    int num;    //评估数据
+};
 
 class UserStatusEvaluator
 {
@@ -23,12 +28,13 @@ public:
     void add(int fd, string &ip);  //增加数据
     void remove(int fd);  //移除数据
     void set_0(int fd);   //评估数据置0
+    string get_ip(int fd);  //根据fd去获取对应的ip
 
 private:
     UserStatusEvaluator();
 
-    mutex m_mutex;
-    unordered_map<int,pair<string,int>> m_map;  //数据 fd : (ip : 0-3)
+    shared_mutex m_mutex;
+    unordered_map<int,Info> m_map;  //数据 fd : Info
 };
 
 #endif // USERSTATUSEVALUATOR_H
