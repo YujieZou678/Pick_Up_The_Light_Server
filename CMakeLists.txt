@@ -20,6 +20,7 @@ add_executable(MyServer main.cpp
     snowflakeidworker.h snowflakeidworker.cpp
     initcontrol.h initcontrol.cpp
     netpacketgenerator.h netpacketgenerator.cpp
+    sendfilecontrol.h sendfilecontrol.cpp
 )
 add_subdirectory(json)
 

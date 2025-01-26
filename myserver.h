@@ -18,6 +18,7 @@ class EpollOperator;
 struct NetPacketHeader;
 class InitControl;
 class NetPacketGenerator;
+class SendFileControl;
 
 class MyServer
 {
@@ -35,6 +36,7 @@ private:
     NetPacketGenerator *m_netPacketGenerator;    //网络包生成器
 
     InitControl *m_initControl;
+    SendFileControl *m_sendFileControl;
 };
 
 #endif // MYSERVER_H

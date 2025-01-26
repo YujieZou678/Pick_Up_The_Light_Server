@@ -21,6 +21,7 @@ using json = nlohmann::json;
 #include "userstatusevaluator.h"
 #include "netpacketgenerator.h"
 #include "initcontrol.h"
+#include "sendfilecontrol.h"
 #include "config.h"
 
 MyServer::MyServer()
@@ -32,6 +33,7 @@ MyServer::MyServer()
     m_userStatusEvaluator = UserStatusEvaluator::getInstance();
     m_initControl = InitControl::getInstance();
     m_netPacketGenerator = NetPacketGenerator::getInstance();
+    m_sendFileControl = SendFileControl::getInstance();
 }
 
 MyServer::~MyServer()
@@ -155,9 +157,11 @@ void MyServer::processSingleRequest(int fd, NetPacketHeader &pheader)
         std::cout << ret << std::endl;
         if (ret==-1 || ret==0 || ret!=pheader.data_size) return;
         /* 将数据写入文件 */
-        string dirpath;
-        if (jsonMsg["filetype"] == FileType::ProfilePicture) dirpath = PROFILE_PICTURE_URL;
-        string filepath = dirpath + string(jsonMsg["id"]) +string(jsonMsg["suffix"]);
+        string dirpath, filepath;
+        if (jsonMsg["filetype"] == FileType::ProfilePicture) {
+            dirpath = PROFILE_PICTURE_URL;
+            filepath = dirpath + string(jsonMsg["id"]) + ".png";
+        }
         ofstream ofs(filepath);  //覆盖写入
         ofs.write(file_buf, pheader.data_size);
         ofs.close();  //关闭文件
@@ -165,13 +169,22 @@ void MyServer::processSingleRequest(int fd, NetPacketHeader &pheader)
     }
     break;
     case Purpose::GetFile: {
-        std::cout << std::this_thread::get_id() << "GetFile" << std::endl;
+        std::cout << "GetFile" << std::endl;
         /* 2.读数据包 */
         char buf[BUF_SIZE];
         memset(buf, 0, sizeof(buf));
         ret = my_recv(fd, buf, pheader.data_size, 0);
         if (ret==-1 || ret==0 || ret!=pheader.data_size) return;
-        std::cout << buf << std::endl;
+        /* 向客户端发送指定文件 */
+        json jsonMsg = json::parse(buf);
+        string dirpath, filepath;
+        if (jsonMsg["filetype"] == FileType::ProfilePicture) {
+            dirpath = PROFILE_PICTURE_URL;
+            filepath = dirpath + string(jsonMsg["id"]) + ".png";
+            if (m_sendFileControl->send_file(fd, FileType::ProfilePicture, filepath.data(), ".png")) {
+                std::cout << "发送成功" << std::endl;
+            } else std::cout << "发送失败" << std::endl;
+        }
     }
     break;
     default:
