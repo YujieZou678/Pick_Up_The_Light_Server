@@ -80,3 +80,17 @@ bool SendFileControl::send_file(int fd, const FileType &filetype, const char *fi
     if (ret == 0 || ret == -1) return false;
     return true;
 }
+
+void SendFileControl::send_file(int fd, const string &buf)
+{
+    json jsonMsg = json::parse(buf);
+    string dirpath, filepath;
+    if (jsonMsg["filetype"] == FileType::ProfilePicture) {
+        /* 头像文件 */
+        dirpath = PROFILE_PICTURE_URL;
+        filepath = dirpath + string(jsonMsg["id"]) + ".png";
+        if (send_file(fd, FileType::ProfilePicture, filepath.data(), ".png")) {
+            std::cout << "发送成功" << std::endl;
+        } else std::cout << "发送失败" << std::endl;
+    }
+}

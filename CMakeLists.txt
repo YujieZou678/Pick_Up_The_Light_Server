@@ -10,17 +10,14 @@ add_executable(MyServer main.cpp
     config.h config.cpp
     threadpool.h threadpool.cpp
     userstatusevaluator.h userstatusevaluator.cpp
-    userinterface.h userinterface.cpp
-    userproxy.h userproxy.cpp
-    user.h user.cpp
-    commentinterface.h commentinterface.cpp
-    commentproxy.h commentproxy.cpp
-    comment.h comment.cpp
     epolloperator.h epolloperator.cpp
     snowflakeidworker.h snowflakeidworker.cpp
     initcontrol.h initcontrol.cpp
     netpacketgenerator.h netpacketgenerator.cpp
     sendfilecontrol.h sendfilecontrol.cpp
+    receivefilecontrol.h receivefilecontrol.cpp
+    sendinfocontrol.h sendinfocontrol.cpp
+    modifyinfocontrol.h modifyinfocontrol.cpp
 )
 add_subdirectory(json)
 

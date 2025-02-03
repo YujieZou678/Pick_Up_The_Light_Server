@@ -1,7 +1,5 @@
 #include "netpacketgenerator.h"
 
-#include <nlohmann/json.hpp>
-using json = nlohmann::json;
 #include <string>
 using std::string;
 
@@ -35,3 +33,27 @@ NetPacket NetPacketGenerator::register_P(bool success)
 
     return p;
 }
+
+NetPacket NetPacketGenerator::sendComments_P(const json &comments)
+{
+    NetPacket p;
+    json jsonMsg;
+
+    jsonMsg["infotype"] = InfoType::Comment;
+    jsonMsg["comments"] = comments;
+
+    /* 数据包 */
+    string strMsg = jsonMsg.dump();
+    strcpy(p.dataPacket.data, strMsg.data());
+    /* 包头 */
+    p.packetHeader.purpose = Purpose::GetInfo;
+    p.packetHeader.data_size = strMsg.size();
+
+    return p;
+}
+
+
+
+
+
+

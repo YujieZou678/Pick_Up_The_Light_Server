@@ -15,10 +15,13 @@ using std::make_shared;
 class ThreadPool;
 class UserStatusEvaluator;
 class EpollOperator;
+class NetPacketGenerator;
 struct NetPacketHeader;
 class InitControl;
-class NetPacketGenerator;
 class SendFileControl;
+class ReceiveFileControl;
+class SendInfoControl;
+class ModifyInfoControl;
 
 class MyServer
 {
@@ -37,6 +40,9 @@ private:
 
     InitControl *m_initControl;
     SendFileControl *m_sendFileControl;
+    ReceiveFileControl *m_receiveFileControl;
+    SendInfoControl *m_sendInfoControl;
+    ModifyInfoControl *m_modifyInfoControl;
 };
 
 #endif // MYSERVER_H

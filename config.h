@@ -37,7 +37,7 @@ date: 2024.12.2
 #define MAX_THREAD_NUMBER 10
 
 /* 用户头像存储地址 */
-#define PROFILE_PICTURE_URL "/root/my_test/Server/cache/"
+#define PROFILE_PICTURE_URL "/root/my_test/Server/cache/profilePicture/"
 
 template <typename T>  //删除指针
 inline void safe_delete(T *&target) {
@@ -59,14 +59,27 @@ inline void safe_delete_arr(T *&target) {
 enum class Purpose {
     Heart,
     Register,
+    Login,
     SendFile,
-    GetFile
+    GetFile,
+    GetInfo,
+    ModifyInfo
 };
 
 /* 文件类型 */
 enum class FileType {
     ProfilePicture,
     Video
+};
+
+/* 信息类型 */
+enum class InfoType {
+    Comment,
+    Like,
+    Follow,
+    Fans,
+    VodList,
+    LiveList
 };
 
 /* 网络包包头 */

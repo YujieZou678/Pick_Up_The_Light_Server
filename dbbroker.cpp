@@ -39,7 +39,19 @@ void DbBroker::initDataBase()
 {
     string command;
     /* 创建表User */
-    command = "create table User(id varchar(20), pw varchar(30), nickName varchar(30))";
+    command = "create table User(id varchar(30), pw varchar(30), nickName varchar(30), pictureUrl varchar(50))";
+    query_execute(command);
+    /* 创建表Comment */
+    command = "create table Comment(publisherId varchar(30), videoId varchar(30), content varchar(500), time datetime)";
+    query_execute(command);
+    /* 创建表Video */
+    command = "create table Video(id varchar(30), publisherId varchar(30), videoUrl varchar(50), profile varchar(500), previewUrl varchar(50))";
+    query_execute(command);
+    /* 创建表VideoLike */
+    command = "create table VideoLike(videoId varchar(30), userId varchar(30))";
+    query_execute(command);
+    /* 创建表Attention */
+    command = "create table Attention(userId varchar(30), followerId varchar(30))";
     query_execute(command);
 
     cout << "DB: Successfully init!" << endl;

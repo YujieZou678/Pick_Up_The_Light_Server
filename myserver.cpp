@@ -10,8 +10,7 @@ date: 2024.12.2
 #include <arpa/inet.h>
 #include <string.h>
 #include <iostream>
-#include <fstream>
-using std::ofstream;
+
 
 #include "nlohmann/json.hpp"
 using json = nlohmann::json;
@@ -22,6 +21,9 @@ using json = nlohmann::json;
 #include "netpacketgenerator.h"
 #include "initcontrol.h"
 #include "sendfilecontrol.h"
+#include "receivefilecontrol.h"
+#include "sendinfocontrol.h"
+#include "modifyinfocontrol.h"
 #include "config.h"
 
 MyServer::MyServer()
@@ -31,9 +33,13 @@ MyServer::MyServer()
     /* 单例初始化 */
     m_epollOperator = EpollOperator::getInstance();
     m_userStatusEvaluator = UserStatusEvaluator::getInstance();
-    m_initControl = InitControl::getInstance();
     m_netPacketGenerator = NetPacketGenerator::getInstance();
+
+    m_initControl = InitControl::getInstance();
     m_sendFileControl = SendFileControl::getInstance();
+    m_receiveFileControl = ReceiveFileControl::getInstance();
+    m_sendInfoControl = SendInfoControl::getInstance();
+    m_modifyInfoControl = ModifyInfoControl::getInstance();
 }
 
 MyServer::~MyServer()
@@ -137,6 +143,10 @@ void MyServer::processSingleRequest(int fd, NetPacketHeader &pheader)
         my_send(fd, &p, sizeof(NetPacketHeader)+p.packetHeader.data_size, 0);
     }
     break;
+    case Purpose::Login: {
+        std::cout << "Login" << std::endl;
+    }
+    break;
     case Purpose::Heart: {
         std::cout << "心跳包" << std::endl;
         /* 当前连接评估状态置0 */
@@ -144,28 +154,19 @@ void MyServer::processSingleRequest(int fd, NetPacketHeader &pheader)
     }
     break;
     case Purpose::SendFile: {
-        std::cout << "NewFile" << std::endl;
+        std::cout << "SendFile" << std::endl;
         /* 2.读文件数据包=文件信息+文件数据 */
         /* 文件信息 */
         char buf[BUF_SIZE+1];
         ret = my_recv(fd, buf, BUF_SIZE, 0);  //阻塞读取文件信息
         if (ret==-1 || ret==0 || ret!=BUF_SIZE) return;
-        json jsonMsg = json::parse(buf);
         /* 文件数据 */
         char* file_buf = new char[pheader.data_size+1];  //申请堆内存
         ret = my_recv(fd, file_buf, pheader.data_size, 0);  //阻塞读取文件
         std::cout << ret << std::endl;
         if (ret==-1 || ret==0 || ret!=pheader.data_size) return;
-        /* 将数据写入文件 */
-        string dirpath, filepath;
-        if (jsonMsg["filetype"] == FileType::ProfilePicture) {
-            dirpath = PROFILE_PICTURE_URL;
-            filepath = dirpath + string(jsonMsg["id"]) + ".png";
-        }
-        ofstream ofs(filepath);  //覆盖写入
-        ofs.write(file_buf, pheader.data_size);
-        ofs.close();  //关闭文件
-        safe_delete_arr(file_buf);  //释放内存
+        /* 接收文件 */
+        m_receiveFileControl->receive_file(buf, file_buf, pheader.data_size);
     }
     break;
     case Purpose::GetFile: {
@@ -176,15 +177,29 @@ void MyServer::processSingleRequest(int fd, NetPacketHeader &pheader)
         ret = my_recv(fd, buf, pheader.data_size, 0);
         if (ret==-1 || ret==0 || ret!=pheader.data_size) return;
         /* 向客户端发送指定文件 */
-        json jsonMsg = json::parse(buf);
-        string dirpath, filepath;
-        if (jsonMsg["filetype"] == FileType::ProfilePicture) {
-            dirpath = PROFILE_PICTURE_URL;
-            filepath = dirpath + string(jsonMsg["id"]) + ".png";
-            if (m_sendFileControl->send_file(fd, FileType::ProfilePicture, filepath.data(), ".png")) {
-                std::cout << "发送成功" << std::endl;
-            } else std::cout << "发送失败" << std::endl;
-        }
+        m_sendFileControl->send_file(fd, buf);
+    }
+    break;
+    case Purpose::GetInfo: {
+        std::cout << "GetInfo" << std::endl;
+        /* 2.读数据包 */
+        char buf[BUF_SIZE];
+        memset(buf, 0, sizeof(buf));
+        ret = my_recv(fd, buf, pheader.data_size, 0);
+        if (ret==-1 || ret==0 || ret!=pheader.data_size) return;
+        /* 向客户端发送指定信息 */
+        m_sendInfoControl->send_info(fd, buf);
+    }
+    break;
+    case Purpose::ModifyInfo: {
+        std::cout << "ModifyInfo" << std::endl;
+        /* 2.读数据包 */
+        char buf[BUF_SIZE];
+        memset(buf, 0, sizeof(buf));
+        ret = my_recv(fd, buf, pheader.data_size, 0);
+        if (ret==-1 || ret==0 || ret!=pheader.data_size) return;
+        /* 修改信息 */
+        m_modifyInfoControl->modify_info(buf);
     }
     break;
     default:

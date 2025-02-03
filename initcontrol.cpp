@@ -2,9 +2,8 @@
 
 #include <mysql++/mysql++.h>
 #include <iostream>
-using std::cout;
-using std::endl;
 using std::cerr;
+using std::endl;
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
@@ -31,7 +30,7 @@ bool InitControl::do_register(const string &strMsg)
     mysqlpp::StoreQueryResult res = DbBroker::getInstance()->query_store(command);
     if (res != NULL) {
         if (res.begin() == res.end()) {
-            /* 不重复，存入数据 */
+            /* 不重复，存入数据库 */
             command = "insert into User(id, pw) values('"+id+"','"+pw+"')";
             if (DbBroker::getInstance()->query_execute(command)) return true;
         }
