@@ -39,6 +39,9 @@ date: 2024.12.2
 /* 用户头像存储地址 */
 #define PROFILE_PICTURE_URL "/root/my_test/Server/cache/profilePicture/"
 
+/* 点播视频存储地址 */
+#define VIDEO_URL "/opt/nginx-video/"
+
 template <typename T>  //删除指针
 inline void safe_delete(T *&target) {
     if (nullptr != target) {
@@ -79,7 +82,8 @@ enum class InfoType {
     Follow,
     Fans,
     VodList,
-    LiveList
+    LiveList,
+    Video
 };
 
 /* 网络包包头 */

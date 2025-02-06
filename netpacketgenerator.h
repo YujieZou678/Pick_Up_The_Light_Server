@@ -15,7 +15,9 @@ class NetPacketGenerator
 public:
     static NetPacketGenerator *getInstance();
     NetPacket register_P(bool success);
+    NetPacket login_P(bool success);
     NetPacket sendComments_P(const json &comments);
+    NetPacket sendVodList_P(const json &vodList);
 
 private:
     NetPacketGenerator();

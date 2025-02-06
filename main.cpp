@@ -13,9 +13,10 @@ int main(int argc, char* argv[])
 {
     /* 创建文件夹 */
     try {
-        string dirname = PROFILE_PICTURE_URL;
-        std::filesystem::create_directory(dirname);
-        std::cout << "目录创建成功: " << dirname << std::endl;
+        std::filesystem::create_directory(PROFILE_PICTURE_URL);
+        std::cout << "目录创建成功: " << PROFILE_PICTURE_URL << std::endl;
+        std::filesystem::create_directory(VIDEO_URL);
+        std::cout << "目录创建成功: " << VIDEO_URL << std::endl;
     } catch (const std::filesystem::filesystem_error &e) {
         std::cerr << "无法创建目录: " << e.what() << std::endl;
     }

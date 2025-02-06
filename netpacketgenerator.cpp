@@ -34,6 +34,27 @@ NetPacket NetPacketGenerator::register_P(bool success)
     return p;
 }
 
+NetPacket NetPacketGenerator::login_P(bool success)
+{
+    NetPacket p;
+    json jsonMsg;
+
+    if (success) {
+        jsonMsg["success"] = "true";
+    } else {
+        jsonMsg["success"] = "false";
+    }
+
+    /* 数据包 */
+    string strMsg = jsonMsg.dump();
+    strcpy(p.dataPacket.data, strMsg.data());
+    /* 包头 */
+    p.packetHeader.purpose = Purpose::Login;
+    p.packetHeader.data_size = strMsg.size();
+
+    return p;
+}
+
 NetPacket NetPacketGenerator::sendComments_P(const json &comments)
 {
     NetPacket p;
@@ -41,6 +62,24 @@ NetPacket NetPacketGenerator::sendComments_P(const json &comments)
 
     jsonMsg["infotype"] = InfoType::Comment;
     jsonMsg["comments"] = comments;
+
+    /* 数据包 */
+    string strMsg = jsonMsg.dump();
+    strcpy(p.dataPacket.data, strMsg.data());
+    /* 包头 */
+    p.packetHeader.purpose = Purpose::GetInfo;
+    p.packetHeader.data_size = strMsg.size();
+
+    return p;
+}
+
+NetPacket NetPacketGenerator::sendVodList_P(const json &vodList)
+{
+    NetPacket p;
+    json jsonMsg;
+
+    jsonMsg["infotype"] = InfoType::VodList;
+    jsonMsg["vodList"] = vodList;
 
     /* 数据包 */
     string strMsg = jsonMsg.dump();

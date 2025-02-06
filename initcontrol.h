@@ -13,8 +13,8 @@ class InitControl
 {
 public:
     static InitControl *getInstance();
-    bool do_register(const string &jsonMsg);
-    bool do_login(const string &jsonMsg);
+    bool do_register(const string &strMsg);
+    bool do_login(const string &strMsg);
 
 private:
     InitControl();

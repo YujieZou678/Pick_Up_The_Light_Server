@@ -145,6 +145,14 @@ void MyServer::processSingleRequest(int fd, NetPacketHeader &pheader)
     break;
     case Purpose::Login: {
         std::cout << "Login" << std::endl;
+        /* 2.读数据包 */
+        char buf[BUF_SIZE];
+        memset(buf, 0, sizeof(buf));
+        ret = my_recv(fd, buf, pheader.data_size, 0);
+        if (ret==-1 || ret==0 || ret!=pheader.data_size) return;
+        /* 登陆并返回结果 */
+        NetPacket p = m_netPacketGenerator->login_P(m_initControl->do_login(buf));
+        my_send(fd, &p, sizeof(NetPacketHeader)+p.packetHeader.data_size, 0);
     }
     break;
     case Purpose::Heart: {

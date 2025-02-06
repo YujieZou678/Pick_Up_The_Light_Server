@@ -16,10 +16,11 @@ class SendInfoControl
 public:
     static SendInfoControl *getInstance();
     void send_info(int fd, const string &buf);
-    json toJson_CommentInfo(const string &publisherId, const string &videoId, const string &content, const string &time);
 
 private:
     SendInfoControl();
+    json toJson_CommentInfo(const string &publisherId, const string &videoId, const string &content, const string &time);
+    json toJson_VodListInfo(const string &videoId, const string &publisherId, const string &url, const string &profile, const string &time);
 };
 
 #endif // SENDINFOCONTROL_H
