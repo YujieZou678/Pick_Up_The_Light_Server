@@ -18,6 +18,11 @@ public:
     NetPacket login_P(bool success);
     NetPacket sendComments_P(const json &comments);
     NetPacket sendVodList_P(const json &vodList);
+    NetPacket sendLikeInfo_P(const json &likeInfo);
+    NetPacket sendFollowInfo_P(const json &followInfo);
+    NetPacket sendFansInfo_P(const json &fansInfo);
+    NetPacket sendLiveInfo_P(const json &liveInfo);
+    NetPacket sendLiveList_P(const json &liveList);
 
 private:
     NetPacketGenerator();

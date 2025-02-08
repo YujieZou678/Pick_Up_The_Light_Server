@@ -7,6 +7,7 @@ using std::endl;
 
 #include "dbbroker.h"
 #include "netpacketgenerator.h"
+#include "livelistmonitor.h"
 #include "config.h"
 
 SendInfoControl::SendInfoControl()
@@ -78,6 +79,92 @@ void SendInfoControl::send_info(int fd, const string &buf)
         else cerr << "query.store() failed!" << endl;
     }
     break;
+    case InfoType::Like: {
+        string videoId = jsonMsg["videoId"];
+        string userId = jsonMsg["userId"];
+        string command = "select count(distinct userId),(select if(count(*)=1,true,false) from VideoLike where videoId="+videoId+" and userId="+userId+") from VideoLike where videoId="+videoId;
+        mysqlpp::StoreQueryResult res = DbBroker::getInstance()->query_store(command);
+        if (res != NULL) {
+            if (res.begin() != res.end()) {
+                /* 有数据 */
+                json likeInfo;
+                auto it = res.begin();
+                mysqlpp::Row row = *it;
+                likeInfo = toJson_LikeInfo(row[0], row[1]);
+                NetPacket p = NetPacketGenerator::getInstance()->sendLikeInfo_P(likeInfo);
+                my_send(fd, &p, sizeof(NetPacketHeader)+p.packetHeader.data_size, 0);
+            } else {
+                /* 没数据 */
+                json likeInfo;
+                NetPacket p = NetPacketGenerator::getInstance()->sendLikeInfo_P(likeInfo);
+                my_send(fd, &p, sizeof(NetPacketHeader)+p.packetHeader.data_size, 0);
+            }
+        }
+        else cerr << "query.store() failed!" << endl;
+    }
+    break;
+    case InfoType::Follow: {
+        string userId = jsonMsg["userId"];
+        string command = "select userId from Attention where followerId=" + userId;
+        mysqlpp::StoreQueryResult res = DbBroker::getInstance()->query_store(command);
+        if (res != NULL) {
+            if (res.begin() != res.end()) {
+                /* 有数据 */
+                json followInfo;
+                auto it = res.begin();
+                mysqlpp::Row row = *it;
+                for (auto it = res.begin(); it < res.end(); it++) {
+                    row = *it;
+                    followInfo.push_back(toJson_FollowInfo(string(row[0])));
+                }
+                NetPacket p = NetPacketGenerator::getInstance()->sendFollowInfo_P(followInfo);
+                my_send(fd, &p, sizeof(NetPacketHeader)+p.packetHeader.data_size, 0);
+            } else {
+                /* 没数据 */
+                json followInfo;
+                NetPacket p = NetPacketGenerator::getInstance()->sendFollowInfo_P(followInfo);
+                my_send(fd, &p, sizeof(NetPacketHeader)+p.packetHeader.data_size, 0);
+            }
+        }
+        else cerr << "query.store() failed!" << endl;
+    }
+    break;
+    case InfoType::Fans: {
+        string userId = jsonMsg["userId"];
+        string command = "select followerId from Attention where userId=" + userId;
+        mysqlpp::StoreQueryResult res = DbBroker::getInstance()->query_store(command);
+        if (res != NULL) {
+            if (res.begin() != res.end()) {
+                /* 有数据 */
+                json fansInfo;
+                auto it = res.begin();
+                mysqlpp::Row row = *it;
+                for (auto it = res.begin(); it < res.end(); it++) {
+                    row = *it;
+                    fansInfo.push_back(toJson_FansInfo(string(row[0])));
+                }
+                NetPacket p = NetPacketGenerator::getInstance()->sendFansInfo_P(fansInfo);
+                my_send(fd, &p, sizeof(NetPacketHeader)+p.packetHeader.data_size, 0);
+            } else {
+                /* 没数据 */
+                json fansInfo;
+                NetPacket p = NetPacketGenerator::getInstance()->sendFansInfo_P(fansInfo);
+                my_send(fd, &p, sizeof(NetPacketHeader)+p.packetHeader.data_size, 0);
+            }
+        }
+        else cerr << "query.store() failed!" << endl;
+    }
+    break;
+    case InfoType::LiveList: {
+        json liveListInfo;
+        unordered_map<string,string> liveList = LiveListMonitor::getInstance()->getLiveList();
+        for (auto it : liveList) {
+            liveListInfo.push_back(toJson_LiveListInfo(it.first, it.second));
+        }
+        NetPacket p = NetPacketGenerator::getInstance()->sendLiveList_P(liveListInfo);
+        my_send(fd, &p, sizeof(NetPacketHeader)+p.packetHeader.data_size, 0);
+    }
+    break;
     default:
         break;
     }
@@ -102,6 +189,36 @@ json SendInfoControl::toJson_VodListInfo(const string &videoId, const string &pu
     vodListInfo["profile"] = profile;
     vodListInfo["time"] = time;
     return vodListInfo;
+}
+
+json SendInfoControl::toJson_LikeInfo(int likeCount, bool ifLike)
+{
+    json likeInfo;
+    likeInfo["likeCount"] = likeCount;
+    likeInfo["ifLike"] = ifLike;
+    return likeInfo;
+}
+
+json SendInfoControl::toJson_FollowInfo(const string &userId)
+{
+    json followInfo;
+    followInfo["userId"] = userId;
+    return followInfo;
+}
+
+json SendInfoControl::toJson_FansInfo(const string &followerId)
+{
+    json fansInfo;
+    fansInfo["followerId"] = followerId;
+    return fansInfo;
+}
+
+json SendInfoControl::toJson_LiveListInfo(const string &publisherId, const string &url)
+{
+    json liveListInfo;
+    liveListInfo["publisherId"] = publisherId;
+    liveListInfo["url"] = url;
+    return liveListInfo;
 }
 
 

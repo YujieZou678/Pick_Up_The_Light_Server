@@ -14,7 +14,7 @@ class InitControl
 public:
     static InitControl *getInstance();
     bool do_register(const string &strMsg);
-    bool do_login(const string &strMsg);
+    bool do_login(int fd, const string &strMsg);
 
 private:
     InitControl();

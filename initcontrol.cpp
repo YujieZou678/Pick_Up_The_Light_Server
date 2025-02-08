@@ -8,6 +8,7 @@ using std::endl;
 using json = nlohmann::json;
 
 #include "dbbroker.h"
+#include "userstatusevaluator.h"
 
 InitControl::InitControl()
 {
@@ -40,7 +41,7 @@ bool InitControl::do_register(const string &strMsg)
     return false;
 }
 
-bool InitControl::do_login(const string &strMsg)
+bool InitControl::do_login(int fd, const string &strMsg)
 {
     json jsonMsg = json::parse(strMsg);
     string id = jsonMsg["id"];
@@ -54,7 +55,11 @@ bool InitControl::do_login(const string &strMsg)
             auto it = res.begin();
             mysqlpp::Row row = *it;
             string real_pw = string(row[0]);
-            if (pw == real_pw) return true;
+            if (pw == real_pw) {
+                /* 密码正确，登陆成功 */
+                UserStatusEvaluator::getInstance()->add_userId(fd, id);
+                return true;
+            }
         }
     }
     else cerr << "query.store() failed!" << endl;

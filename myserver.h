@@ -16,6 +16,7 @@ class ThreadPool;
 class UserStatusEvaluator;
 class EpollOperator;
 class NetPacketGenerator;
+class LiveListMonitor;
 struct NetPacketHeader;
 class InitControl;
 class SendFileControl;
@@ -37,6 +38,7 @@ private:
     EpollOperator *m_epollOperator;  //epoll操作对象
     UserStatusEvaluator *m_userStatusEvaluator;  //用户连接状态评估者
     NetPacketGenerator *m_netPacketGenerator;    //网络包生成器
+    LiveListMonitor *m_liveListMonitor;  //直播列表信息监控者
 
     InitControl *m_initControl;
     SendFileControl *m_sendFileControl;

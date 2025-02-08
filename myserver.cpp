@@ -19,6 +19,7 @@ using json = nlohmann::json;
 #include "epolloperator.h"
 #include "userstatusevaluator.h"
 #include "netpacketgenerator.h"
+#include "livelistmonitor.h"
 #include "initcontrol.h"
 #include "sendfilecontrol.h"
 #include "receivefilecontrol.h"
@@ -34,6 +35,7 @@ MyServer::MyServer()
     m_epollOperator = EpollOperator::getInstance();
     m_userStatusEvaluator = UserStatusEvaluator::getInstance();
     m_netPacketGenerator = NetPacketGenerator::getInstance();
+    m_liveListMonitor = LiveListMonitor::getInstance();
 
     m_initControl = InitControl::getInstance();
     m_sendFileControl = SendFileControl::getInstance();
@@ -151,7 +153,7 @@ void MyServer::processSingleRequest(int fd, NetPacketHeader &pheader)
         ret = my_recv(fd, buf, pheader.data_size, 0);
         if (ret==-1 || ret==0 || ret!=pheader.data_size) return;
         /* 登陆并返回结果 */
-        NetPacket p = m_netPacketGenerator->login_P(m_initControl->do_login(buf));
+        NetPacket p = m_netPacketGenerator->login_P(m_initControl->do_login(fd, buf));
         my_send(fd, &p, sizeof(NetPacketHeader)+p.packetHeader.data_size, 0);
     }
     break;
@@ -207,7 +209,7 @@ void MyServer::processSingleRequest(int fd, NetPacketHeader &pheader)
         ret = my_recv(fd, buf, pheader.data_size, 0);
         if (ret==-1 || ret==0 || ret!=pheader.data_size) return;
         /* 修改信息 */
-        m_modifyInfoControl->modify_info(buf);
+        m_modifyInfoControl->modify_info(fd, buf);
     }
     break;
     default:
@@ -236,6 +238,8 @@ void MyServer::processClientRequest(int fd)
         } else if (ret == 0) {
             /* 断开连接 */
             std::cout << "断开连接：" << m_userStatusEvaluator->get_ip(fd) << std::endl;
+            /* 直播列表信息 */
+            m_liveListMonitor->remove(m_userStatusEvaluator->get_userId(fd));
             /* 心跳 */
             m_userStatusEvaluator->remove(fd);
             /* epoll */

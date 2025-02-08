@@ -56,7 +56,7 @@ void UserStatusEvaluator::start()
     t.detach();
 }
 
-void UserStatusEvaluator::add(int fd, string &ip)
+void UserStatusEvaluator::add(int fd, const string &ip)
 {
     Info info;
     info.ip = ip;
@@ -77,10 +77,22 @@ void UserStatusEvaluator::set_0(int fd)
     m_map.at(fd).num = 0;
 }
 
+void UserStatusEvaluator::add_userId(int fd, const string &userId)
+{
+    shared_lock<shared_mutex> lk(m_mutex);
+    m_map.at(fd).userId = userId;
+}
+
 string UserStatusEvaluator::get_ip(int fd)
 {
     shared_lock<shared_mutex> lk(m_mutex);
     return m_map.at(fd).ip;
+}
+
+string UserStatusEvaluator::get_userId(int fd)
+{
+    shared_lock<shared_mutex> lk(m_mutex);
+    return m_map.at(fd).userId;
 }
 
 

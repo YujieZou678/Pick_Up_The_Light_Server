@@ -8,6 +8,8 @@ using std::endl;
 using std::cerr;
 
 #include "dbbroker.h"
+#include "livelistmonitor.h"
+#include "netpacketgenerator.h"
 #include "config.h"
 
 ModifyInfoControl::ModifyInfoControl()
@@ -20,7 +22,7 @@ ModifyInfoControl *ModifyInfoControl::getInstance()
     return &instance;
 }
 
-void ModifyInfoControl::modify_info(const string &buf)
+void ModifyInfoControl::modify_info(int fd, const string &buf)
 {
     json jsonMsg = json::parse(buf);
     InfoType infotype = jsonMsg["infotype"];
@@ -73,6 +75,25 @@ void ModifyInfoControl::modify_info(const string &buf)
             /* 取消关注某人 */
             string command = "delete from Attention where userId="+userId+" and followerId="+followerId;
             DbBroker::getInstance()->query_execute(command);
+        }
+    }
+    break;
+    case InfoType::LiveList: {
+        /* 开启(或结束)直播 */
+        string userId = jsonMsg["userId"];
+        bool ifStart = jsonMsg["ifStart"];
+        if (ifStart) {
+            /* 开启直播 */
+            string url = "rtmp://127.0.0.1:1935/live/"+userId;
+            LiveListMonitor::getInstance()->add(userId, url);
+
+            json liveInfo;
+            liveInfo["url"] = url;
+            NetPacket p = NetPacketGenerator::getInstance()->sendLiveInfo_P(liveInfo);
+            my_send(fd, &p, sizeof(NetPacketHeader)+p.packetHeader.data_size, 0);
+        } else {
+            /* 结束直播 */
+            LiveListMonitor::getInstance()->remove(userId);
         }
     }
     break;

@@ -17,6 +17,7 @@ using std::shared_lock;
 
 struct Info {
     string ip;  //ip地址
+    string userId;  //用户id
     int num;    //评估数据
 };
 
@@ -25,10 +26,12 @@ class UserStatusEvaluator
 public:
     static UserStatusEvaluator *getInstance();
     void start();  //独立线程监测当前数据
-    void add(int fd, string &ip);  //增加数据
+    void add(int fd, const string &ip);  //增加数据
     void remove(int fd);  //移除数据
     void set_0(int fd);   //评估数据置0
+    void add_userId(int fd, const string &userId);  //添加用户id
     string get_ip(int fd);  //根据fd去获取对应的ip
+    string get_userId(int fd);  //根据fd去获取对应的userId
 
 private:
     UserStatusEvaluator();

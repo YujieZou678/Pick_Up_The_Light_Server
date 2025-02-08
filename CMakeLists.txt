@@ -18,6 +18,7 @@ add_executable(MyServer main.cpp
     receivefilecontrol.h receivefilecontrol.cpp
     sendinfocontrol.h sendinfocontrol.cpp
     modifyinfocontrol.h modifyinfocontrol.cpp
+    livelistmonitor.h livelistmonitor.cpp
 )
 add_subdirectory(json)
 

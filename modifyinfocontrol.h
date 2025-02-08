@@ -13,7 +13,7 @@ class ModifyInfoControl
 {
 public:
     static ModifyInfoControl *getInstance();
-    void modify_info(const string &buf);
+    void modify_info(int fd, const string &buf);
 
 private:
     ModifyInfoControl();
