@@ -8,9 +8,9 @@ date: 2024.12.2
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <arpa/inet.h>
+#include <fcntl.h>
 #include <string.h>
 #include <iostream>
-
 
 #include "nlohmann/json.hpp"
 using json = nlohmann::json;
@@ -63,6 +63,8 @@ void MyServer::launch()
         perror("socket error");
         return;
     }
+    int flags = fcntl(listen_fd, F_GETFL, 0);
+    fcntl(listen_fd, F_SETFL, flags | O_NONBLOCK);  //socket非阻塞模式
 
     memset(&servaddr, 0, sizeof(servaddr));  //初始化内存为0
     servaddr.sin_family = AF_INET;
@@ -83,24 +85,19 @@ void MyServer::launch()
 
     /* epoll IO多路复用 */
     m_epollOperator->addFd(listen_fd, EPOLLIN);  //添加服务器套接字，可读事件+水平模式
-
-    /* epoll开始监听 */
-    struct epoll_event evs[MAX_EPOLL_EVENTS];  //一次能返回的最大事件数
     struct sockaddr_in cliaddr;  //获取客户端地址
     socklen_t cliaddr_len = sizeof(cliaddr);
 
+    /* epoll开始监听 */
+    struct epoll_event evs[MAX_EPOLL_EVENTS];  //一次能返回的最大事件数
     while (true) {
         int num = m_epollOperator->listen(evs, MAX_EPOLL_EVENTS);
         if (num > 0) {
             for (int i=0; i<num; i++) {
                 int fd = evs[i].data.fd;  //有事件的fd
                 if (fd == listen_fd) {
-                    /* 处理新连接 */
+                    /* 新连接 */
                     int new_fd = accept(listen_fd, (struct sockaddr*) &cliaddr, &cliaddr_len);
-                    if (new_fd == -1) {
-                        perror("accept error");
-                        continue;
-                    }
                     string addr = inet_ntoa(cliaddr.sin_addr);
                     string port = std::to_string(ntohs(cliaddr.sin_port));
                     string ip = addr+":"+port;
@@ -114,8 +111,8 @@ void MyServer::launch()
                     /* 可读事件(有数据或断开) */
                     m_epollOperator->deleteFd(fd);  //取掉监听
                     /* 传入子线程 */
-                    Task new_fd_task = std::bind(&MyServer::processClientRequest, this, fd);
-                    m_threadPool.get()->add_task(new_fd_task);
+                    Task task = std::bind(&MyServer::processClientRequest, this, fd);
+                    m_threadPool.get()->add_task(task);
                 }
             }
         } else if (num == 0) {
