@@ -8,6 +8,7 @@ date: 2025.1.10
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <errno.h>
 
 #include "config.h"
 
@@ -49,7 +50,8 @@ void EpollOperator::addFd(int fd, uint32_t events)
 void EpollOperator::deleteFd(int fd)
 {
     if (epoll_ctl(m_epollFd, EPOLL_CTL_DEL, fd, NULL) == -1) {
-        perror("epoll_ctl del error");
+        if (errno != ENOENT)
+            perror("epoll_ctl del error");
     }
 }
 

@@ -30,6 +30,8 @@ public:
     MyServer();
     ~MyServer();
     void launch();  //启动服务器
+    int processSingleConnect(int listen_fd);  //处理单个新连接
+    void processConnect(int listen_fd);  //循环处理客户端连接
     void processSingleRequest(int fd, NetPacketHeader &pheader); //处理单个请求
     void processClientRequest(int fd);  //循环处理客户端请求
 

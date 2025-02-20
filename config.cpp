@@ -61,14 +61,3 @@ int my_send(int fd, void* buf, int length, int flags)
 
     return (length-bytes_left);
 }
-
-std::string getTime()
-{
-    auto now = std::chrono::system_clock::now();
-    auto t_c = std::chrono::system_clock::to_time_t(now);
-    std::stringstream ss;
-    ss<<std::put_time(std::localtime(&t_c), "%F %T");
-    std::string time_string=ss.str();
-
-    return time_string;
-}

@@ -85,8 +85,6 @@ void MyServer::launch()
 
     /* epoll IO多路复用 */
     m_epollOperator->addFd(listen_fd, EPOLLIN);  //添加服务器套接字，可读事件+水平模式
-    struct sockaddr_in cliaddr;  //获取客户端地址
-    socklen_t cliaddr_len = sizeof(cliaddr);
 
     /* epoll开始监听 */
     struct epoll_event evs[MAX_EPOLL_EVENTS];  //一次能返回的最大事件数
@@ -96,16 +94,8 @@ void MyServer::launch()
             for (int i=0; i<num; i++) {
                 int fd = evs[i].data.fd;  //有事件的fd
                 if (fd == listen_fd) {
-                    /* 新连接 */
-                    int new_fd = accept(listen_fd, (struct sockaddr*) &cliaddr, &cliaddr_len);
-                    string addr = inet_ntoa(cliaddr.sin_addr);
-                    string port = std::to_string(ntohs(cliaddr.sin_port));
-                    string ip = addr+":"+port;
-                    std::cout << "新连接：" << ip << std::endl;
-                    /* 心跳 */
-                    m_userStatusEvaluator->add(new_fd, ip);
-                    /* epoll */
-                    m_epollOperator->addFd(new_fd, EPOLLIN|EPOLLET);  //可读事件+边缘模式
+                    /* 循环非阻塞accept新连接 */
+                    processConnect(listen_fd);
                 }
                 else {
                     /* 可读事件(有数据或断开) */
@@ -124,6 +114,35 @@ void MyServer::launch()
             return;
         }
     }  // 循环
+}
+
+int MyServer::processSingleConnect(int listen_fd)
+{
+    struct sockaddr_in cliaddr;  //获取客户端地址
+    socklen_t cliaddr_len = sizeof(cliaddr);
+
+    int new_fd = accept(listen_fd, (struct sockaddr*) &cliaddr, &cliaddr_len);  //非阻塞接收连接
+    if (new_fd == -1) {
+//        perror("accept error");
+        return new_fd;
+    }
+
+    string addr = inet_ntoa(cliaddr.sin_addr);
+    string port = std::to_string(ntohs(cliaddr.sin_port));
+    string ip = addr+":"+port;
+    std::cout << "新连接：" << ip << std::endl;
+    /* 心跳 */
+    m_userStatusEvaluator->add(new_fd, ip);
+    /* epoll */
+    m_epollOperator->addFd(new_fd, EPOLLIN|EPOLLET);  //可读事件+边缘模式
+
+    return new_fd;
+}
+
+void MyServer::processConnect(int listen_fd)
+{
+    while (processSingleConnect(listen_fd) > 0) {
+    }
 }
 
 void MyServer::processSingleRequest(int fd, NetPacketHeader &pheader)
@@ -228,7 +247,8 @@ void MyServer::processClientRequest(int fd)
             processSingleRequest(fd, pheader);
         } else if (ret == -1) {
             /* 读取错误，没数据 */
-            perror("recv error");
+            if (errno != EAGAIN)
+                perror("recv error");
             /* 重新加入监听 */
             EpollOperator::getInstance()->addFd(fd, EPOLLIN|EPOLLET);
             break;

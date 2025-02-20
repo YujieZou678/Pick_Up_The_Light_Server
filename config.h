@@ -114,7 +114,5 @@ struct FileNetPacket {
 /* 函数的声明 */
 int my_recv(int fd, void* buf, int length, int flags);  //确保接收的数据完整(一定为length字节或者错误)
 int my_send(int fd, void* buf, int length, int flags);  //确保发送的数据完整
-#include <string>
-std::string getTime();
 
 #endif // CONFIG_H
