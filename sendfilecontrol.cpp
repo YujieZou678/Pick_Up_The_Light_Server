@@ -135,7 +135,7 @@ void SendFileControl::send_file(int fd, const string &buf)
         /* 头像文件 */
         string pictureSuffix = "";
         command = "select pictureSuffix from User where id=" + string(jsonMsg["id"]);
-        mysqlpp::StoreQueryResult res = DbBroker::getInstance()->query_store(command);
+        mysqlpp::StoreQueryResult res = Singleton<DbBroker>::getInstance()->query_store(command);
         if (res != NULL) {
             if (res.begin() != res.end()) {
                 auto it = res.begin();
@@ -154,7 +154,7 @@ void SendFileControl::send_file(int fd, const string &buf)
         /* 点播视频文件 */
         string videoSuffix = "", publisherId = "";
         command = "select videoSuffix,publisherId from Video where id=" + string(jsonMsg["id"]);
-        mysqlpp::StoreQueryResult res = DbBroker::getInstance()->query_store(command);
+        mysqlpp::StoreQueryResult res = Singleton<DbBroker>::getInstance()->query_store(command);
         if (res != NULL) {
             if (res.begin() != res.end()) {
                 auto it = res.begin();

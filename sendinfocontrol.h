@@ -14,7 +14,7 @@ using json = nlohmann::json;
 #include "noncopyable.h"
 #include "singleton.h"
 
-class SendInfoControl : public Noncopyable
+class SendInfoControl : private Noncopyable
 {
     friend class Singleton<SendInfoControl>;  //赋予单例类调用构造权限
 public:

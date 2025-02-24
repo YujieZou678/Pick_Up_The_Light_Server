@@ -10,11 +10,13 @@ date: 2024.12.2
 #include <string>
 using std::string;
 
-class DbBroker
-{
-public:
-    static DbBroker *getInstance();
+#include "noncopyable.h"
+#include "singleton.h"
 
+class DbBroker : private Noncopyable
+{
+    friend class Singleton<DbBroker>;  //赋予单例类调用构造权限
+public:
     void initDataBase();
     bool query_execute(const string &command);
     mysqlpp::StoreQueryResult query_store(const string &command);

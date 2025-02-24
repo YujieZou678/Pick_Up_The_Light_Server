@@ -21,7 +21,7 @@ int main(int argc, char* argv[])
         std::cerr << "无法创建目录: " << e.what() << std::endl;
     }
     /* 数据库初始化 */
-    DbBroker::getInstance()->initDataBase();
+    Singleton<DbBroker>::getInstance()->initDataBase();
     /* 启动服务器 */
     MyServer myServer;
     myServer.launch();  //循环监听

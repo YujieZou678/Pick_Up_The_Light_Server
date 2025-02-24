@@ -24,7 +24,7 @@ struct Info {
     int num;    //评估数据
 };
 
-class UserStatusEvaluator : public Noncopyable
+class UserStatusEvaluator : private Noncopyable
 {
     friend class Singleton<UserStatusEvaluator>;  //赋予单例类调用构造权限
 public:

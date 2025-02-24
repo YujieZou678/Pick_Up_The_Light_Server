@@ -13,7 +13,7 @@ using json = nlohmann::json;
 #include "singleton.h"
 #include "config.h"
 
-class NetPacketGenerator : public Noncopyable
+class NetPacketGenerator : private Noncopyable
 {
     friend class Singleton<NetPacketGenerator>;  //赋予单例类调用构造权限
 public:

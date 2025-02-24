@@ -15,7 +15,7 @@ using json = nlohmann::json;
 #include "singleton.h"
 #include "config.h"
 
-class SendFileControl : public Noncopyable
+class SendFileControl : private Noncopyable
 {
     friend class Singleton<SendFileControl>;  //赋予单例类调用构造权限
 public:

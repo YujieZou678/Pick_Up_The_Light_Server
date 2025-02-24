@@ -12,7 +12,7 @@ using std::string;
 #include "noncopyable.h"
 #include "singleton.h"
 
-class InitControl : public Noncopyable
+class InitControl : private Noncopyable
 {
     friend class Singleton<InitControl>;  //赋予单例类调用构造权限
 public:

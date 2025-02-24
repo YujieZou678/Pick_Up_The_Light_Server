@@ -23,7 +23,7 @@ void SendInfoControl::send_info(int fd, const string &buf)
         /* 获取评论 */
         string videoId = jsonMsg["id"];
         string command = "select * from Comment where videoId="+videoId;
-        mysqlpp::StoreQueryResult res = DbBroker::getInstance()->query_store(command);
+        mysqlpp::StoreQueryResult res = Singleton<DbBroker>::getInstance()->query_store(command);
         if (res != NULL) {
             if (res.begin() != res.end()) {
                 /* 有数据 */
@@ -50,7 +50,7 @@ void SendInfoControl::send_info(int fd, const string &buf)
         int offset = jsonMsg["offset"];
         int num = jsonMsg["num"];
         string command = "select * from Video limit " + std::to_string(offset) + "," + std::to_string(num);
-        mysqlpp::StoreQueryResult res = DbBroker::getInstance()->query_store(command);
+        mysqlpp::StoreQueryResult res = Singleton<DbBroker>::getInstance()->query_store(command);
         if (res != NULL) {
             if (res.begin() != res.end()) {
                 /* 有数据 */
@@ -77,7 +77,7 @@ void SendInfoControl::send_info(int fd, const string &buf)
         string videoId = jsonMsg["videoId"];
         string userId = jsonMsg["userId"];
         string command = "select count(distinct userId),(select if(count(*)=1,true,false) from VideoLike where videoId="+videoId+" and userId="+userId+") from VideoLike where videoId="+videoId;
-        mysqlpp::StoreQueryResult res = DbBroker::getInstance()->query_store(command);
+        mysqlpp::StoreQueryResult res = Singleton<DbBroker>::getInstance()->query_store(command);
         if (res != NULL) {
             if (res.begin() != res.end()) {
                 /* 有数据 */
@@ -100,7 +100,7 @@ void SendInfoControl::send_info(int fd, const string &buf)
     case InfoType::Follow: {
         string userId = jsonMsg["userId"];
         string command = "select userId from Attention where followerId=" + userId;
-        mysqlpp::StoreQueryResult res = DbBroker::getInstance()->query_store(command);
+        mysqlpp::StoreQueryResult res = Singleton<DbBroker>::getInstance()->query_store(command);
         if (res != NULL) {
             if (res.begin() != res.end()) {
                 /* 有数据 */
@@ -126,7 +126,7 @@ void SendInfoControl::send_info(int fd, const string &buf)
     case InfoType::Fans: {
         string userId = jsonMsg["userId"];
         string command = "select followerId from Attention where userId=" + userId;
-        mysqlpp::StoreQueryResult res = DbBroker::getInstance()->query_store(command);
+        mysqlpp::StoreQueryResult res = Singleton<DbBroker>::getInstance()->query_store(command);
         if (res != NULL) {
             if (res.begin() != res.end()) {
                 /* 有数据 */

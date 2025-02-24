@@ -38,7 +38,7 @@ bool ReceiveFileControl::receive_file(const string &fileInfo, char *fileData, si
     safe_delete_arr(fileData);  //释放内存
 
     /* 更新数据库 */
-    DbBroker::getInstance()->query_execute(command);
+    Singleton<DbBroker>::getInstance()->query_execute(command);
 
     return true;
 }

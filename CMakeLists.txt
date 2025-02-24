@@ -19,7 +19,7 @@ add_executable(MyServer main.cpp
     sendinfocontrol.h sendinfocontrol.cpp
     modifyinfocontrol.h modifyinfocontrol.cpp
     livelistmonitor.h livelistmonitor.cpp
-    myserver2.h myserver2.cpp
+    boostserver.h boostserver.cpp
     singleton.h
     noncopyable.h
 )

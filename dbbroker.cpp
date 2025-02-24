@@ -29,12 +29,6 @@ DbBroker::DbBroker() :
 //    std::cout << "Successfully drop the connection!" << std::endl;
 //}
 
-DbBroker *DbBroker::getInstance()
-{
-    static DbBroker instance;  //局部静态变量初始化线程安全 C++11
-    return &instance;
-}
-
 void DbBroker::initDataBase()
 {
     string command;

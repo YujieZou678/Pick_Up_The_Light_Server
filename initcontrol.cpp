@@ -22,12 +22,12 @@ bool InitControl::do_register(const string &strMsg)
 
     /* 检测账号是否重复 */
     string command = "select id from User where id = " + id;
-    mysqlpp::StoreQueryResult res = DbBroker::getInstance()->query_store(command);
+    mysqlpp::StoreQueryResult res = Singleton<DbBroker>::getInstance()->query_store(command);
     if (res != NULL) {
         if (res.begin() == res.end()) {
             /* 不重复，存入数据库 */
             command = "insert into User(id, pw) values('"+id+"','"+pw+"')";
-            if (DbBroker::getInstance()->query_execute(command)) return true;
+            if (Singleton<DbBroker>::getInstance()->query_execute(command)) return true;
         }
     }
     else cerr << "query.store() failed!" << endl;
@@ -43,7 +43,7 @@ bool InitControl::do_login(int fd, const string &strMsg)
 
     /* 检测密码是否正确 */
     string command = "select pw from User where id = " + id;
-    mysqlpp::StoreQueryResult res = DbBroker::getInstance()->query_store(command);
+    mysqlpp::StoreQueryResult res = Singleton<DbBroker>::getInstance()->query_store(command);
     if (res != NULL) {
         if (res.begin() != res.end()) {
             auto it = res.begin();

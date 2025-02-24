@@ -29,14 +29,14 @@ void ModifyInfoControl::modify_info(int fd, const string &buf)
         /* 存入数据库 */
         string command = "insert into Comment(publisherId, videoId, content, time) values('" +
                          publisherId + "','" + videoId + "','" + content + "',(select now()))";
-        DbBroker::getInstance()->query_execute(command);
+        Singleton<DbBroker>::getInstance()->query_execute(command);
     }
     break;
     case InfoType::Video: {
         /* 删除我的视频 */
         string videoId = jsonMsg["videoId"];
         string command = "delete from Video where id = " + videoId;
-        if (DbBroker::getInstance()->query_execute(command)) cout << "已删除视频" << videoId << endl;
+        if (Singleton<DbBroker>::getInstance()->query_execute(command)) cout << "已删除视频" << videoId << endl;
         else cerr << "视频删除失败" << endl;
     }
     break;
@@ -48,11 +48,11 @@ void ModifyInfoControl::modify_info(int fd, const string &buf)
         if (ifLike) {
             /* 点赞 */
             string command = "insert into VideoLike values('" + videoId + "','" + userId + "')";
-            DbBroker::getInstance()->query_execute(command);
+            Singleton<DbBroker>::getInstance()->query_execute(command);
         } else {
             /* 取消点赞 */
             string command = "delete from VideoLike where videoId="+videoId+" and userId="+userId;
-            DbBroker::getInstance()->query_execute(command);
+            Singleton<DbBroker>::getInstance()->query_execute(command);
         }
     }
     break;
@@ -64,11 +64,11 @@ void ModifyInfoControl::modify_info(int fd, const string &buf)
         if (ifFollow) {
             /* 关注某人 */
             string command = "insert into Attention values('" + userId + "','" + followerId + "')";
-            DbBroker::getInstance()->query_execute(command);
+            Singleton<DbBroker>::getInstance()->query_execute(command);
         } else {
             /* 取消关注某人 */
             string command = "delete from Attention where userId="+userId+" and followerId="+followerId;
-            DbBroker::getInstance()->query_execute(command);
+            Singleton<DbBroker>::getInstance()->query_execute(command);
         }
     }
     break;

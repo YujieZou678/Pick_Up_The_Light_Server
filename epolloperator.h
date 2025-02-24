@@ -11,7 +11,7 @@ date: 2025.1.10
 #include "noncopyable.h"
 #include "singleton.h"
 
-class EpollOperator : public Noncopyable
+class EpollOperator : private Noncopyable
 {
     friend class Singleton<EpollOperator>;  //赋予单例类调用构造权限
 public:

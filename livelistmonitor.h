@@ -17,7 +17,7 @@ using std::string;
 #include "noncopyable.h"
 #include "singleton.h"
 
-class LiveListMonitor : public Noncopyable
+class LiveListMonitor : private Noncopyable
 {
     friend class Singleton<LiveListMonitor>;  //赋予单例类调用构造权限
 public:

@@ -25,7 +25,7 @@ using std::condition_variable;
 using Task = std::function<void()>;  //函数对象类型
 
 /* 线程池类 */
-class ThreadPool : public Noncopyable
+class ThreadPool : private Noncopyable
 {
     friend class Singleton<ThreadPool>;  //赋予单例类调用构造权限
 public:
