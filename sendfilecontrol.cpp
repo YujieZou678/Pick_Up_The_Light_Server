@@ -15,12 +15,6 @@ SendFileControl::SendFileControl()
 {
 }
 
-SendFileControl *SendFileControl::getInstance()
-{
-    static SendFileControl instance;  //局部静态变量初始化线程安全 C++11
-    return &instance;
-}
-
 size_t SendFileControl::getFileSize(const char *fileName)
 {
     if (fileName == nullptr) {

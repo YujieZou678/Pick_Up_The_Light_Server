@@ -15,16 +15,19 @@ using std::string;
 using std::shared_mutex;
 using std::shared_lock;
 
+#include "noncopyable.h"
+#include "singleton.h"
+
 struct Info {
     string ip;  //ip地址
     string userId;  //用户id
     int num;    //评估数据
 };
 
-class UserStatusEvaluator
+class UserStatusEvaluator : public Noncopyable
 {
+    friend class Singleton<UserStatusEvaluator>;  //赋予单例类调用构造权限
 public:
-    static UserStatusEvaluator *getInstance();
     void start();  //独立线程监测当前数据
     void add(int fd, const string &ip);  //增加数据
     void remove(int fd);  //移除数据

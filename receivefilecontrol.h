@@ -9,10 +9,13 @@ date: 2025.2.2
 #include <string>
 using std::string;
 
-class ReceiveFileControl
+#include "noncopyable.h"
+#include "singleton.h"
+
+class ReceiveFileControl : public Noncopyable
 {
+    friend class Singleton<ReceiveFileControl>;  //赋予单例类调用构造权限
 public:
-    static ReceiveFileControl *getInstance();
     bool receive_file(const string &fileInfo, char *fileData, size_t size);
 
 private:

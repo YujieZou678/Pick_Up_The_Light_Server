@@ -14,12 +14,6 @@ InitControl::InitControl()
 {
 }
 
-InitControl *InitControl::getInstance()
-{
-    static InitControl instance;  //局部静态变量初始化线程安全 C++11
-    return &instance;
-}
-
 bool InitControl::do_register(const string &strMsg)
 {
     json jsonMsg = json::parse(strMsg);
@@ -57,7 +51,7 @@ bool InitControl::do_login(int fd, const string &strMsg)
             string real_pw = string(row[0]);
             if (pw == real_pw) {
                 /* 密码正确，登陆成功 */
-                UserStatusEvaluator::getInstance()->add_userId(fd, id);
+                Singleton<UserStatusEvaluator>::getInstance()->add_userId(fd, id);
                 return true;
             }
         }

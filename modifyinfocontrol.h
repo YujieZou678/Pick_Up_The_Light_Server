@@ -9,10 +9,13 @@ date: 2025.2.2
 #include <string>
 using std::string;
 
-class ModifyInfoControl
+#include "noncopyable.h"
+#include "singleton.h"
+
+class ModifyInfoControl : public Noncopyable
 {
+    friend class Singleton<ModifyInfoControl>;  //赋予单例类调用构造权限
 public:
-    static ModifyInfoControl *getInstance();
     void modify_info(int fd, const string &buf);
 
 private:

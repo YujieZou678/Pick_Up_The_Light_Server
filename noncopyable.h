@@ -1,5 +1,10 @@
-#ifndef SNOWFLAKE_NONCOPYABLE_H
-#define SNOWFLAKE_NONCOPYABLE_H
+/*
+func: 继承该类即拥有”禁止拷贝/移动赋值“的属性。
+author: zouyujie
+date: 2025.2.24
+*/
+#ifndef NONCOPYABLE_H
+#define NONCOPYABLE_H
 
 class Noncopyable
 {
@@ -13,4 +18,4 @@ protected:
     Noncopyable& operator=(const Noncopyable&&) = delete;
 };
 
-#endif // SNOWFLAKE_NONCOPYABLE_H
+#endif // NONCOPYABLE_H

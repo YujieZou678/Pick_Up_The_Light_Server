@@ -8,10 +8,13 @@ date: 2025.1.10
 
 #include <sys/epoll.h>
 
-class EpollOperator
+#include "noncopyable.h"
+#include "singleton.h"
+
+class EpollOperator : public Noncopyable
 {
+    friend class Singleton<EpollOperator>;  //赋予单例类调用构造权限
 public:
-    static EpollOperator *getInstance();
     void addFd(int fd, uint32_t events);     //增加fd
     void deleteFd(int fd);  //删除fd
     int listen(struct epoll_event *evs, int size);  //开始监听

@@ -31,12 +31,6 @@ EpollOperator::EpollOperator()
 //    }
 //}
 
-EpollOperator *EpollOperator::getInstance()
-{
-    static EpollOperator instance;  //局部静态变量初始化线程安全 C++11
-    return &instance;
-}
-
 void EpollOperator::addFd(int fd, uint32_t events)
 {
     struct epoll_event ev;

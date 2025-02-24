@@ -9,10 +9,13 @@ date: 2025.1.21
 #include <string>
 using std::string;
 
-class InitControl
+#include "noncopyable.h"
+#include "singleton.h"
+
+class InitControl : public Noncopyable
 {
+    friend class Singleton<InitControl>;  //赋予单例类调用构造权限
 public:
-    static InitControl *getInstance();
     bool do_register(const string &strMsg);
     bool do_login(int fd, const string &strMsg);
 

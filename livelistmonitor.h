@@ -14,10 +14,13 @@ using std::unordered_map;
 #include <string>
 using std::string;
 
-class LiveListMonitor
+#include "noncopyable.h"
+#include "singleton.h"
+
+class LiveListMonitor : public Noncopyable
 {
+    friend class Singleton<LiveListMonitor>;  //赋予单例类调用构造权限
 public:
-    static LiveListMonitor *getInstance();
     void add(const string &id, const string &url);  //增加数据
     void remove(const string &id);  //移除数据
     unordered_map<string,string> getLiveList();  //获取直播列表

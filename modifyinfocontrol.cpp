@@ -16,12 +16,6 @@ ModifyInfoControl::ModifyInfoControl()
 {
 }
 
-ModifyInfoControl *ModifyInfoControl::getInstance()
-{
-    static ModifyInfoControl instance;  //局部静态变量初始化线程安全 C++11
-    return &instance;
-}
-
 void ModifyInfoControl::modify_info(int fd, const string &buf)
 {
     json jsonMsg = json::parse(buf);
@@ -85,15 +79,15 @@ void ModifyInfoControl::modify_info(int fd, const string &buf)
         if (ifStart) {
             /* 开启直播 */
             string url = "rtmp://127.0.0.1:1935/live/"+userId;
-            LiveListMonitor::getInstance()->add(userId, url);
+            Singleton<LiveListMonitor>::getInstance()->add(userId, url);
 
             json liveInfo;
             liveInfo["url"] = url;
-            NetPacket p = NetPacketGenerator::getInstance()->sendLiveInfo_P(liveInfo);
+            NetPacket p = Singleton<NetPacketGenerator>::getInstance()->sendLiveInfo_P(liveInfo);
             my_send(fd, &p, sizeof(NetPacketHeader)+p.packetHeader.data_size, 0);
         } else {
             /* 结束直播 */
-            LiveListMonitor::getInstance()->remove(userId);
+            Singleton<LiveListMonitor>::getInstance()->remove(userId);
         }
     }
     break;

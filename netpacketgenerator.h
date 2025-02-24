@@ -8,12 +8,15 @@ date: 2025.1.22
 
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
+
+#include "noncopyable.h"
+#include "singleton.h"
 #include "config.h"
 
-class NetPacketGenerator
+class NetPacketGenerator : public Noncopyable
 {
+    friend class Singleton<NetPacketGenerator>;  //赋予单例类调用构造权限
 public:
-    static NetPacketGenerator *getInstance();
     NetPacket register_P(bool success);
     NetPacket login_P(bool success);
     NetPacket sendComments_P(const json &comments);

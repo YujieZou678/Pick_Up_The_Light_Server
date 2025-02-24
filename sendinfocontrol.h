@@ -11,10 +11,13 @@ using std::string;
 #include "nlohmann/json.hpp"
 using json = nlohmann::json;
 
-class SendInfoControl
+#include "noncopyable.h"
+#include "singleton.h"
+
+class SendInfoControl : public Noncopyable
 {
+    friend class Singleton<SendInfoControl>;  //赋予单例类调用构造权限
 public:
-    static SendInfoControl *getInstance();
     void send_info(int fd, const string &buf);
 
 private:

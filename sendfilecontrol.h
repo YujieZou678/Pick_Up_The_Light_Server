@@ -11,12 +11,14 @@ using std::string;
 #include "nlohmann/json.hpp"
 using json = nlohmann::json;
 
+#include "noncopyable.h"
+#include "singleton.h"
 #include "config.h"
 
-class SendFileControl
+class SendFileControl : public Noncopyable
 {
+    friend class Singleton<SendFileControl>;  //赋予单例类调用构造权限
 public:
-    static SendFileControl *getInstance();
     size_t getFileSize(const char *fileName);  //通过stat结构体获得文件大小，单位字节
     void send_file(int fd, const string &buf); //重载
 

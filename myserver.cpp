@@ -29,19 +29,18 @@ using json = nlohmann::json;
 
 MyServer::MyServer()
 {
-    m_threadPool = make_shared<ThreadPool>(MIN_THREAD_NUMBER, MAX_THREAD_NUMBER);
-
     /* 单例初始化 */
-    m_epollOperator = EpollOperator::getInstance();
-    m_userStatusEvaluator = UserStatusEvaluator::getInstance();
-    m_netPacketGenerator = NetPacketGenerator::getInstance();
-    m_liveListMonitor = LiveListMonitor::getInstance();
+    m_threadPool = Singleton<ThreadPool>::getInstance();
+    m_epollOperator = Singleton<EpollOperator>::getInstance();
+    m_userStatusEvaluator = Singleton<UserStatusEvaluator>::getInstance();
+    m_netPacketGenerator = Singleton<NetPacketGenerator>::getInstance();
+    m_liveListMonitor = Singleton<LiveListMonitor>::getInstance();
 
-    m_initControl = InitControl::getInstance();
-    m_sendFileControl = SendFileControl::getInstance();
-    m_receiveFileControl = ReceiveFileControl::getInstance();
-    m_sendInfoControl = SendInfoControl::getInstance();
-    m_modifyInfoControl = ModifyInfoControl::getInstance();
+    m_initControl = Singleton<InitControl>::getInstance();
+    m_sendFileControl = Singleton<SendFileControl>::getInstance();
+    m_receiveFileControl = Singleton<ReceiveFileControl>::getInstance();
+    m_sendInfoControl = Singleton<SendInfoControl>::getInstance();
+    m_modifyInfoControl = Singleton<ModifyInfoControl>::getInstance();
 }
 
 MyServer::~MyServer()
@@ -51,7 +50,7 @@ MyServer::~MyServer()
 void MyServer::launch()
 {
     /* 启动心跳包检测线程 */
-    m_userStatusEvaluator->getInstance()->start();
+    m_userStatusEvaluator->start();
 
     /* 启动服务器 */
     int listen_fd;
@@ -102,7 +101,7 @@ void MyServer::launch()
                     m_epollOperator->deleteFd(fd);  //取掉监听
                     /* 传入子线程 */
                     Task task = std::bind(&MyServer::processClientRequest, this, fd);
-                    m_threadPool.get()->add_task(task);
+                    m_threadPool->add_task(task);
                 }
             }
         } else if (num == 0) {
@@ -250,7 +249,7 @@ void MyServer::processClientRequest(int fd)
             if (errno != EAGAIN)
                 perror("recv error");
             /* 重新加入监听 */
-            EpollOperator::getInstance()->addFd(fd, EPOLLIN|EPOLLET);
+            Singleton<EpollOperator>::getInstance()->addFd(fd, EPOLLIN|EPOLLET);
             break;
         } else if (ret == 0) {
             /* 断开连接 */

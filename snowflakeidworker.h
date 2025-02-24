@@ -3,8 +3,8 @@
 
 #include <sstream>
 #include <mutex>
-#include "snowflake_noncopyable.h"
-#include "snowflake_singleton.h"
+#include "noncopyable.h"
+#include "singleton.h"
 
 class SnowflakeIdWorker :private Noncopyable
 {

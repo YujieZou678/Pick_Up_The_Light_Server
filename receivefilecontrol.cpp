@@ -13,12 +13,6 @@ ReceiveFileControl::ReceiveFileControl()
 {
 }
 
-ReceiveFileControl *ReceiveFileControl::getInstance()
-{
-    static ReceiveFileControl instance;  //局部静态变量初始化线程安全 C++11
-    return &instance;
-}
-
 bool ReceiveFileControl::receive_file(const string &fileInfo, char *fileData, size_t size)
 {
     /* 处理文件信息 */
@@ -31,7 +25,7 @@ bool ReceiveFileControl::receive_file(const string &fileInfo, char *fileData, si
         command = "update User set pictureSuffix='" + string(jsonMsg["suffix"]) + "' where id=" + string(jsonMsg["id"]);
     } else if (jsonMsg["filetype"] == FileType::Video) {
         /* 视频文件 */
-        string videoId = std::to_string(Singleton<IdWorker>::instance().nextId());
+        string videoId = std::to_string(Singleton<IdWorker>::getInstance()->nextId());
         dirpath = VIDEO_URL;
         filepath = dirpath + videoId + string(jsonMsg["suffix"]);
         command = "insert into Video(id, publisherId, videoSuffix, profile, time) values('" + videoId + "', '" + string(jsonMsg["id"]) + "', '" + string(jsonMsg["suffix"]) + "', '" + string(jsonMsg["profile"]) + "',(select now()))";

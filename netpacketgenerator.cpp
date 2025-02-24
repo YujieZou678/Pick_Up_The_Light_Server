@@ -7,12 +7,6 @@ NetPacketGenerator::NetPacketGenerator()
 {
 }
 
-NetPacketGenerator *NetPacketGenerator::getInstance()
-{
-    static NetPacketGenerator instance;  //局部静态变量初始化线程安全 C++11
-    return &instance;
-}
-
 NetPacket NetPacketGenerator::register_P(bool success)
 {
     NetPacket p;

@@ -4,12 +4,6 @@ LiveListMonitor::LiveListMonitor()
 {
 }
 
-LiveListMonitor *LiveListMonitor::getInstance()
-{
-    static LiveListMonitor instance;  //局部静态变量初始化线程安全 C++11
-    return &instance;
-}
-
 void LiveListMonitor::add(const string &id, const string &url)
 {
     unique_lock<mutex> l(m_mutex);

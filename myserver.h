@@ -8,9 +8,6 @@ date: 2024.12.2
 
 #include <string>
 using std::string;
-#include <memory>
-using std::shared_ptr;
-using std::make_shared;
 
 class ThreadPool;
 class UserStatusEvaluator;
@@ -36,7 +33,7 @@ public:
     void processClientRequest(int fd);  //循环处理客户端请求
 
 private:
-    shared_ptr<ThreadPool> m_threadPool;  //线程池对象
+    ThreadPool *m_threadPool;  //线程池对象
     EpollOperator *m_epollOperator;  //epoll操作对象
     UserStatusEvaluator *m_userStatusEvaluator;  //用户连接状态评估者
     NetPacketGenerator *m_netPacketGenerator;    //网络包生成器

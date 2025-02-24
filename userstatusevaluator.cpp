@@ -15,12 +15,6 @@ UserStatusEvaluator::UserStatusEvaluator()
 {
 }
 
-UserStatusEvaluator *UserStatusEvaluator::getInstance()
-{
-    static UserStatusEvaluator instance;  //局部静态变量初始化线程安全 C++11
-    return &instance;
-}
-
 void UserStatusEvaluator::start()
 {
     thread t([this](){  //捕获当前对象
@@ -41,7 +35,7 @@ void UserStatusEvaluator::start()
                     /* 心跳 */
                     m_map.erase(fd);
                     /* epoll */
-                    EpollOperator::getInstance()->deleteFd(fd);
+                    Singleton<EpollOperator>::getInstance()->deleteFd(fd);
                     /* close */
                     close(fd);
                 } else if (data.second.num < 3 && data.second.num >= 0) {

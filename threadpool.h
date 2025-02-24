@@ -19,13 +19,16 @@ using std::unique_lock;
 using std::condition_variable;
 #include <functional>
 
+#include "noncopyable.h"
+#include "singleton.h"
+
 using Task = std::function<void()>;  //函数对象类型
 
 /* 线程池类 */
-class ThreadPool
+class ThreadPool : public Noncopyable
 {
+    friend class Singleton<ThreadPool>;  //赋予单例类调用构造权限
 public:
-    ThreadPool(int min, int max);  //最小线程数，最大线程数
     template<class F,class... Args>
     void add_task(F &&f, Args&&... args) {  //完美转发(万能引用)
         Task task = std::bind(std::forward<F>(f), std::forward<Args>(args)...);
@@ -38,9 +41,10 @@ public:
     void add_task(Task&); //重载
     int get_live_num();  //获取当前存活线程数
     int get_busy_num();  //获取当前忙碌线程数
-    ~ThreadPool();
 
 private:
+    ThreadPool();  //构造
+    ~ThreadPool();
     queue<Task> taskQ;      //任务队列
     thread manager_thread;  //管理者线程
     vector<thread> worker_threads;  //工作者线程

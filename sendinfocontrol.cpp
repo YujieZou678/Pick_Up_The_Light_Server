@@ -14,12 +14,6 @@ SendInfoControl::SendInfoControl()
 {
 }
 
-SendInfoControl *SendInfoControl::getInstance()
-{
-    static SendInfoControl instance;  //局部静态变量初始化线程安全 C++11
-    return &instance;
-}
-
 void SendInfoControl::send_info(int fd, const string &buf)
 {
     json jsonMsg = json::parse(buf);
@@ -39,12 +33,12 @@ void SendInfoControl::send_info(int fd, const string &buf)
                     row = *it;
                     comments.push_back(toJson_CommentInfo(string(row[0]), string(row[1]), string(row[2]), string(row[3])));
                 }
-                NetPacket p = NetPacketGenerator::getInstance()->sendComments_P(comments);
+                NetPacket p = Singleton<NetPacketGenerator>::getInstance()->sendComments_P(comments);
                 my_send(fd, &p, sizeof(NetPacketHeader)+p.packetHeader.data_size, 0);
             } else {
                 /* 没数据 */
                 json comments;
-                NetPacket p = NetPacketGenerator::getInstance()->sendComments_P(comments);
+                NetPacket p = Singleton<NetPacketGenerator>::getInstance()->sendComments_P(comments);
                 my_send(fd, &p, sizeof(NetPacketHeader)+p.packetHeader.data_size, 0);
             }
         }
@@ -67,12 +61,12 @@ void SendInfoControl::send_info(int fd, const string &buf)
                     string url = "http://127.0.0.1/"+string(row[0])+string(row[2]);
                     videoList.push_back(toJson_VodListInfo(string(row[0]), string(row[1]), url, string(row[3]), string(row[5])));
                 }
-                NetPacket p = NetPacketGenerator::getInstance()->sendVodList_P(videoList);
+                NetPacket p = Singleton<NetPacketGenerator>::getInstance()->sendVodList_P(videoList);
                 my_send(fd, &p, sizeof(NetPacketHeader)+p.packetHeader.data_size, 0);
             } else {
                 /* 没数据 */
                 json videoList;
-                NetPacket p = NetPacketGenerator::getInstance()->sendVodList_P(videoList);
+                NetPacket p = Singleton<NetPacketGenerator>::getInstance()->sendVodList_P(videoList);
                 my_send(fd, &p, sizeof(NetPacketHeader)+p.packetHeader.data_size, 0);
             }
         }
@@ -91,12 +85,12 @@ void SendInfoControl::send_info(int fd, const string &buf)
                 auto it = res.begin();
                 mysqlpp::Row row = *it;
                 likeInfo = toJson_LikeInfo(row[0], row[1]);
-                NetPacket p = NetPacketGenerator::getInstance()->sendLikeInfo_P(likeInfo);
+                NetPacket p = Singleton<NetPacketGenerator>::getInstance()->sendLikeInfo_P(likeInfo);
                 my_send(fd, &p, sizeof(NetPacketHeader)+p.packetHeader.data_size, 0);
             } else {
                 /* 没数据 */
                 json likeInfo;
-                NetPacket p = NetPacketGenerator::getInstance()->sendLikeInfo_P(likeInfo);
+                NetPacket p = Singleton<NetPacketGenerator>::getInstance()->sendLikeInfo_P(likeInfo);
                 my_send(fd, &p, sizeof(NetPacketHeader)+p.packetHeader.data_size, 0);
             }
         }
@@ -117,12 +111,12 @@ void SendInfoControl::send_info(int fd, const string &buf)
                     row = *it;
                     followInfo.push_back(toJson_FollowInfo(string(row[0])));
                 }
-                NetPacket p = NetPacketGenerator::getInstance()->sendFollowInfo_P(followInfo);
+                NetPacket p = Singleton<NetPacketGenerator>::getInstance()->sendFollowInfo_P(followInfo);
                 my_send(fd, &p, sizeof(NetPacketHeader)+p.packetHeader.data_size, 0);
             } else {
                 /* 没数据 */
                 json followInfo;
-                NetPacket p = NetPacketGenerator::getInstance()->sendFollowInfo_P(followInfo);
+                NetPacket p = Singleton<NetPacketGenerator>::getInstance()->sendFollowInfo_P(followInfo);
                 my_send(fd, &p, sizeof(NetPacketHeader)+p.packetHeader.data_size, 0);
             }
         }
@@ -143,12 +137,12 @@ void SendInfoControl::send_info(int fd, const string &buf)
                     row = *it;
                     fansInfo.push_back(toJson_FansInfo(string(row[0])));
                 }
-                NetPacket p = NetPacketGenerator::getInstance()->sendFansInfo_P(fansInfo);
+                NetPacket p = Singleton<NetPacketGenerator>::getInstance()->sendFansInfo_P(fansInfo);
                 my_send(fd, &p, sizeof(NetPacketHeader)+p.packetHeader.data_size, 0);
             } else {
                 /* 没数据 */
                 json fansInfo;
-                NetPacket p = NetPacketGenerator::getInstance()->sendFansInfo_P(fansInfo);
+                NetPacket p = Singleton<NetPacketGenerator>::getInstance()->sendFansInfo_P(fansInfo);
                 my_send(fd, &p, sizeof(NetPacketHeader)+p.packetHeader.data_size, 0);
             }
         }
@@ -157,11 +151,11 @@ void SendInfoControl::send_info(int fd, const string &buf)
     break;
     case InfoType::LiveList: {
         json liveListInfo;
-        unordered_map<string,string> liveList = LiveListMonitor::getInstance()->getLiveList();
+        unordered_map<string,string> liveList = Singleton<LiveListMonitor>::getInstance()->getLiveList();
         for (auto it : liveList) {
             liveListInfo.push_back(toJson_LiveListInfo(it.first, it.second));
         }
-        NetPacket p = NetPacketGenerator::getInstance()->sendLiveList_P(liveListInfo);
+        NetPacket p = Singleton<NetPacketGenerator>::getInstance()->sendLiveList_P(liveListInfo);
         my_send(fd, &p, sizeof(NetPacketHeader)+p.packetHeader.data_size, 0);
     }
     break;

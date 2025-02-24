@@ -11,11 +11,11 @@ using std::endl;
 
 #include "config.h"
 
-ThreadPool::ThreadPool(int min, int max)
+ThreadPool::ThreadPool()
 {
-    this->min_num = min;
-    this->max_num = max;
-    this->live_num = min;
+    this->min_num = MIN_THREAD_NUMBER;
+    this->max_num = MAX_THREAD_NUMBER;
+    this->live_num = MIN_THREAD_NUMBER;
     this->busy_num = 0;
     this->destroy_num = 0;
 
