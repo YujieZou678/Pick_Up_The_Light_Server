@@ -8,20 +8,17 @@ date: 2025.2.22
 
 #include <boost/asio.hpp>
 
-struct NetPacketHeader;
-
 class BoostServer
 {
 public:
     BoostServer();
     ~BoostServer();
     void launch();  //启动服务器
-    void processConnect();  //循环处理客户端连接
-    void processSingleRequest(int fd, NetPacketHeader &pheader); //处理单个请求
-    void processClientRequest(int fd);  //循环处理客户端请求
+    void start_accept();  //开始接收连接
 
 private:
-    boost::asio::io_context io_context;
+    boost::asio::io_context m_io_context;
+    boost::asio::ip::tcp::acceptor m_acceptor;
 };
 
 #endif // BOOSTSERVER_H

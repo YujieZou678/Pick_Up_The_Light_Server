@@ -33,9 +33,6 @@ date: 2024.12.2
 /* 线程池最小线程数 */
 #define MIN_THREAD_NUMBER 3
 
-/* 线程池最大线程数 */
-#define MAX_THREAD_NUMBER 10
-
 /* 用户头像存储地址 */
 #define PROFILE_PICTURE_URL "/root/my_test/Server/cache/profilePicture/"
 

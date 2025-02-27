@@ -8,6 +8,10 @@ date: 2025.1.21
 
 #include <string>
 using std::string;
+#include <boost/asio.hpp>
+using tcp = boost::asio::ip::tcp;
+#include <memory>
+using std::shared_ptr;
 
 #include "noncopyable.h"
 #include "singleton.h"
@@ -18,6 +22,7 @@ class InitControl : private Noncopyable
 public:
     bool do_register(const string &strMsg);
     bool do_login(int fd, const string &strMsg);
+    bool do_login(shared_ptr<tcp::socket> socket_ptr, const string &strMsg);  //boost重载
 
 private:
     InitControl();

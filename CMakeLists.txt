@@ -22,6 +22,7 @@ add_executable(MyServer main.cpp
     boostserver.h boostserver.cpp
     singleton.h
     noncopyable.h
+    session.h session.cpp
 )
 add_subdirectory(json)
 

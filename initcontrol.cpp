@@ -61,3 +61,28 @@ bool InitControl::do_login(int fd, const string &strMsg)
     return false;
 }
 
+bool InitControl::do_login(shared_ptr<tcp::socket> socket_ptr, const string &strMsg) {
+    json jsonMsg = json::parse(strMsg);
+    string id = jsonMsg["id"];
+    string pw = jsonMsg["pw"];
+
+    /* 检测密码是否正确 */
+    string command = "select pw from User where id = " + id;
+    mysqlpp::StoreQueryResult res = Singleton<DbBroker>::getInstance()->query_store(command);
+    if (res != NULL) {
+        if (res.begin() != res.end()) {
+            auto it = res.begin();
+            mysqlpp::Row row = *it;
+            string real_pw = string(row[0]);
+            if (pw == real_pw) {
+                /* 密码正确，登陆成功 */
+                Singleton<UserStatusEvaluator>::getInstance()->add_userId(socket_ptr, id);
+                return true;
+            }
+        }
+    }
+    else cerr << "query.store() failed!" << endl;
+
+    return false;
+}
+

@@ -14,7 +14,7 @@ using std::endl;
 ThreadPool::ThreadPool()
 {
     this->min_num = MIN_THREAD_NUMBER;
-    this->max_num = MAX_THREAD_NUMBER;
+    this->max_num = std::thread::hardware_concurrency();  //主机最大核数
     this->live_num = MIN_THREAD_NUMBER;
     this->busy_num = 0;
     this->destroy_num = 0;
