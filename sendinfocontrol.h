@@ -10,6 +10,9 @@ date: 2025.2.2
 using std::string;
 #include "nlohmann/json.hpp"
 using json = nlohmann::json;
+#include <boost/asio.hpp>
+#include <memory>
+using std::shared_ptr;
 
 #include "noncopyable.h"
 #include "singleton.h"
@@ -19,6 +22,7 @@ class SendInfoControl : private Noncopyable
     friend class Singleton<SendInfoControl>;  //赋予单例类调用构造权限
 public:
     void send_info(int fd, const string &buf);
+    void send_info(shared_ptr<boost::asio::ip::tcp::socket> socket_ptr, const string &buf);  //重载
 
 private:
     SendInfoControl();

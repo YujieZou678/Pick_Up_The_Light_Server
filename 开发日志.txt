@@ -244,16 +244,27 @@
   目前：只是前者代码编写很简单，而后者相当于重构一个线程池，故先写一个前者的版本OvO。
   
 2025.2.27
-1.完成部分BoostServer的代码编写。
+1.完成部分BoostServer的代码编写:
+  1)测试完Register；
+  2)测试完Login；
+  3)测试完Heart。
+  
+2025.2.28
+1.继续BoostServer的代码编写:
+  1)测试完SendFile;
+  2)测试完GetFile;
+  3)测试完GetInfo;
+  4)测试完ModifyInfo;
+2.Boost的receive()并不是阻塞读取完数据，目前感觉跟read_some差不多，不过还可以用boost:asio::read()。
+3.BoostServer实现完毕。
 
 
 待完成：
 
 优化计划：
 1.服务器的缓存机制：实体类及其broker类的编写、（虚拟）代理模式。
-2.boost的asio替换基于C的网络通信。
-3.图像文件格式处理。
-4.视频文件格式处理。
+2.图像文件格式处理。
+3.视频文件格式处理。
 
              
              
