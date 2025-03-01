@@ -32,9 +32,6 @@ DbBroker::DbBroker() :
 void DbBroker::initDataBase()
 {
     string command;
-    /* 创建数据库Server */
-    command = "create database Server";
-    query_execute(command);
     /* 创建表User */
     command = "create table User(id varchar(30), pw varchar(30), nickName varchar(30), pictureSuffix varchar(20))";
     query_execute(command);

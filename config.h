@@ -34,7 +34,7 @@ date: 2024.12.2
 #define MIN_THREAD_NUMBER 3
 
 /* 用户头像存储地址 */
-#define PROFILE_PICTURE_URL "/root/my_test/Server/cache/profilePicture/"
+#define PROFILE_PICTURE_URL "/root/my_test/MyServer/cache/profilePicture/"
 
 /* 点播视频存储地址 */
 #define VIDEO_URL "/opt/nginx-video/"
