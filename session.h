@@ -18,7 +18,7 @@ using std::array;
 class Session : public std::enable_shared_from_this<Session>
 {
 public:
-    Session(shared_ptr<boost::asio::ip::tcp::socket> socket);
+    Session(shared_ptr<boost::asio::ip::tcp::socket> socket_ptr);
     void start();
 
 private:

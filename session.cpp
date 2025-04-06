@@ -11,9 +11,9 @@
 #include "sendinfocontrol.h"
 #include "modifyinfocontrol.h"
 
-Session::Session(shared_ptr<boost::asio::ip::tcp::socket> socket) :
-    m_socket_ptr(socket),
-    m_remote_endpoint(socket.get()->remote_endpoint())
+Session::Session(shared_ptr<boost::asio::ip::tcp::socket> socket_ptr) :
+    m_socket_ptr(socket_ptr),
+    m_remote_endpoint(socket_ptr.get()->remote_endpoint())
 {
 }
 
