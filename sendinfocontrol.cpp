@@ -73,7 +73,7 @@ void SendInfoControl::send_info(int fd, const string &buf)
         else cerr << "query.store() failed!" << endl;
     }
     break;
-    case InfoType::Like: {
+    case InfoType::VideoLike: {
         string videoId = jsonMsg["videoId"];
         string userId = jsonMsg["userId"];
         string command = "select count(distinct userId),(select if(count(*)=1,true,false) from VideoLike where videoId="+videoId+" and userId="+userId+") from VideoLike where videoId="+videoId;
@@ -223,7 +223,7 @@ void SendInfoControl::send_info(shared_ptr<boost::asio::ip::tcp::socket> socket_
         else cerr << "query.store() failed!" << endl;
     }
     break;
-    case InfoType::Like: {
+    case InfoType::VideoLike: {
         string videoId = jsonMsg["videoId"];
         string userId = jsonMsg["userId"];
         string command = "select count(distinct userId),(select if(count(*)=1,true,false) from VideoLike where videoId="+videoId+" and userId="+userId+") from VideoLike where videoId="+videoId;

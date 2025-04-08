@@ -8,6 +8,8 @@ date: 2025.1.22
 
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
+#include <string>
+using std::string;
 
 #include "noncopyable.h"
 #include "singleton.h"
@@ -19,6 +21,7 @@ class NetPacketGenerator : private Noncopyable
 public:
     NetPacket register_P(bool success);
     NetPacket login_P(bool success);
+    NetPacket sendVideoId_P(const string &videoId);
     NetPacket sendComments_P(const json &comments);
     NetPacket sendVodList_P(const json &vodList);
     NetPacket sendLikeInfo_P(const json &likeInfo);

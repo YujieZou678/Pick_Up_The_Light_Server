@@ -16,6 +16,10 @@ int main(int argc, char* argv[])
     try {
         std::filesystem::create_directory(PROFILE_PICTURE_URL);
         std::cout << "目录创建成功: " << PROFILE_PICTURE_URL << std::endl;
+        std::filesystem::create_directory(CHAT_PICTURE_URL);
+        std::cout << "目录创建成功: " << CHAT_PICTURE_URL << std::endl;
+        std::filesystem::create_directory(PREVIEW_PICTURE_URL);
+        std::cout << "目录创建成功: " << PREVIEW_PICTURE_URL << std::endl;
         std::filesystem::create_directory(VIDEO_URL);
         std::cout << "目录创建成功: " << VIDEO_URL << std::endl;
     } catch (const std::filesystem::filesystem_error &e) {

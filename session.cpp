@@ -67,7 +67,7 @@ void Session::processSingleRequest(NetPacketHeader &pheader)
         std::cout << ret << std::endl;
         if (ret==-1 || ret==0 || ret!=pheader.data_size) return;
         /* 接收文件 */
-        Singleton<ReceiveFileControl>::getInstance()->receive_file(m_buf.data(), file_buf, pheader.data_size);
+        Singleton<ReceiveFileControl>::getInstance()->receive_file(m_socket_ptr, m_buf.data(), file_buf, pheader.data_size);
     }
     break;
     case Purpose::GetFile: {

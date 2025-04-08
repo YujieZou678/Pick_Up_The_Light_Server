@@ -1,8 +1,5 @@
 #include "netpacketgenerator.h"
 
-#include <string>
-using std::string;
-
 NetPacketGenerator::NetPacketGenerator()
 {
 }
@@ -49,6 +46,22 @@ NetPacket NetPacketGenerator::login_P(bool success)
     return p;
 }
 
+NetPacket NetPacketGenerator::sendVideoId_P(const string &videoId)
+{
+    NetPacket p;
+    json jsonMsg;
+    jsonMsg["videoId"] = videoId;
+
+    /* 数据包 */
+    string strMsg = jsonMsg.dump();
+    strcpy(p.dataPacket.data, strMsg.data());
+    /* 包头 */
+    p.packetHeader.purpose = Purpose::SendFile;
+    p.packetHeader.data_size = strMsg.size();
+
+    return p;
+}
+
 NetPacket NetPacketGenerator::sendComments_P(const json &comments)
 {
     NetPacket p;
@@ -90,7 +103,7 @@ NetPacket NetPacketGenerator::sendLikeInfo_P(const json &likeInfo)
     NetPacket p;
     json jsonMsg;
 
-    jsonMsg["infotype"] = InfoType::Like;
+    jsonMsg["infotype"] = InfoType::VideoLike;
     jsonMsg["likeInfo"] = likeInfo;
 
     /* 数据包 */

@@ -40,7 +40,7 @@ void ModifyInfoControl::modify_info(int fd, const string &buf)
         else cerr << "视频删除失败" << endl;
     }
     break;
-    case InfoType::Like: {
+    case InfoType::VideoLike: {
         /* 点赞(或取消点赞)视频 */
         string videoId = jsonMsg["videoId"];
         string userId = jsonMsg["userId"];
@@ -119,7 +119,7 @@ void ModifyInfoControl::modify_info(shared_ptr<tcp::socket> socket_ptr, const st
                 else cerr << "视频删除失败" << endl;
     }
     break;
-    case InfoType::Like: {
+    case InfoType::VideoLike: {
         /* 点赞(或取消点赞)视频 */
         string videoId = jsonMsg["videoId"];
         string userId = jsonMsg["userId"];

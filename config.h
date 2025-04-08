@@ -36,6 +36,12 @@ date: 2024.12.2
 /* 用户头像存储地址 */
 #define PROFILE_PICTURE_URL "/root/my_test/MyServer/cache/profilePicture/"
 
+/* 用户聊天图像存储地址 */
+#define CHAT_PICTURE_URL "/root/my_test/MyServer/cache/chatPicture/"
+
+/* 视频预览图像存储地址 */
+#define PREVIEW_PICTURE_URL "/root/my_test/MyServer/cache/previewPicture/"
+
 /* 点播视频存储地址 */
 #define VIDEO_URL "/opt/nginx-video/"
 
@@ -63,24 +69,35 @@ enum class Purpose {
     SendFile,
     GetFile,
     GetInfo,
-    ModifyInfo
+    ModifyInfo,
+    Chat
 };
 
 /* 文件类型 */
 enum class FileType {
     ProfilePicture,
+    VideoPreviewImg,
+    ChatImg,
     Video
 };
 
 /* 信息类型 */
 enum class InfoType {
     Comment,
-    Like,
+    VideoLike,
+    CommentLike,
     Follow,
     Fans,
     VodList,
     LiveList,
     Video
+};
+
+/* 消息类型 */
+enum class MessageType {
+    VideoPreviewImg,
+    ChatImg,
+    Characters
 };
 
 /* 网络包包头 */

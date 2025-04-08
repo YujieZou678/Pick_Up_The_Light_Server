@@ -191,7 +191,7 @@ void MyServer::processSingleRequest(int fd, NetPacketHeader &pheader)
         std::cout << ret << std::endl;
         if (ret==-1 || ret==0 || ret!=pheader.data_size) return;
         /* 接收文件 */
-        m_receiveFileControl->receive_file(buf, file_buf, pheader.data_size);
+        m_receiveFileControl->receive_file(fd, buf, file_buf, pheader.data_size);
     }
     break;
     case Purpose::GetFile: {

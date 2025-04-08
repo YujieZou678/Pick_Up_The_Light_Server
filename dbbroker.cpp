@@ -32,20 +32,47 @@ DbBroker::DbBroker() :
 void DbBroker::initDataBase()
 {
     string command;
-    /* 创建表User */
-    command = "create table User(id varchar(30), pw varchar(30), nickName varchar(30), pictureSuffix varchar(20))";
-    query_execute(command);
-    /* 创建表Comment */
-    command = "create table Comment(publisherId varchar(30), videoId varchar(30), content varchar(500), time datetime)";
-    query_execute(command);
-    /* 创建表Video */
+    /*
+     * 点播视频信息
+     * id publisherId videoSuffix previewSuffix profile time
+     * 创建表Video */
     command = "create table Video(id varchar(30), publisherId varchar(30), videoSuffix varchar(20), profile varchar(500), previewSuffix varchar(20), time datetime)";
     query_execute(command);
-    /* 创建表VideoLike */
+    /*
+     * 用户信息
+     * id pw nickName pictureSuffix
+     * 创建表User */
+    command = "create table User(id varchar(30), pw varchar(30), nickName varchar(30), pictureSuffix varchar(20))";
+    query_execute(command);
+    /*
+     * 聊天记录
+     * sendId receiveId messageType message time
+     * 创建表Message */
+    command = "create table Message(sendId varchar(30), receiveId varchar(30), messageType int, message varchar(500), time datetime)";
+    query_execute(command);
+    /*
+     * 评论
+     * id replyCommentId videoId content publisherId time
+     * 创建表Comment */
+    command = "create table Comment(id varchar(30), replyCommentId varchar(30), publisherId varchar(30), videoId varchar(30), content varchar(500), time datetime)";
+    query_execute(command);
+    /*
+     * 点播视频点赞
+     * videoId userId
+     * 创建表VideoLike */
     command = "create table VideoLike(videoId varchar(30), userId varchar(30))";
     query_execute(command);
-    /* 创建表Attention */
-    command = "create table Attention(userId varchar(30), followerId varchar(30))";
+    /*
+     * 评论点赞
+     * commentId userId
+     * 创建表CommentLike */
+    command = "create table CommentLike(commentId varchar(30), userId varchar(30))";
+    query_execute(command);
+    /*
+     * 关注
+     * userId followerId
+     * 创建表Follow */
+    command = "create table Follow(userId varchar(30), followerId varchar(30))";
     query_execute(command);
 
     cout << "DB: Successfully init!" << endl;
