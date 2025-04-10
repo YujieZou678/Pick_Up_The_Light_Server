@@ -188,6 +188,80 @@ NetPacket NetPacketGenerator::sendLiveList_P(const json &liveList)
     return p;
 }
 
+NetPacket NetPacketGenerator::sendNickNameInfo_P(const json &nickNameInfo)
+{
+    NetPacket p;
+    json jsonMsg;
+
+    jsonMsg["infotype"] = InfoType::NickName;
+    jsonMsg["nickNameInfo"] = nickNameInfo;
+
+    /* 数据包 */
+    string strMsg = jsonMsg.dump();
+    strcpy(p.dataPacket.data, strMsg.data());
+    /* 包头 */
+    p.packetHeader.purpose = Purpose::GetInfo;
+    p.packetHeader.data_size = strMsg.size();
+
+    return p;
+}
+
+NetPacket NetPacketGenerator::sendUserVideoInfo_P(const string &userId, const json &userVideoList)
+{
+    NetPacket p;
+    json jsonMsg;
+
+    jsonMsg["infotype"] = InfoType::UserVideo;
+    jsonMsg["userId"] = userId;
+    jsonMsg["userVideoList"] = userVideoList;
+
+    /* 数据包 */
+    string strMsg = jsonMsg.dump();
+    strcpy(p.dataPacket.data, strMsg.data());
+    /* 包头 */
+    p.packetHeader.purpose = Purpose::GetInfo;
+    p.packetHeader.data_size = strMsg.size();
+
+    return p;
+}
+
+NetPacket NetPacketGenerator::sendUserVideoLikeInfo_P(const string &userId, const json &userVideoLikeList)
+{
+    NetPacket p;
+    json jsonMsg;
+
+    jsonMsg["infotype"] = InfoType::UserVideoLike;
+    jsonMsg["userId"] = userId;
+    jsonMsg["userVideoLikeList"] = userVideoLikeList;
+
+    /* 数据包 */
+    string strMsg = jsonMsg.dump();
+    strcpy(p.dataPacket.data, strMsg.data());
+    /* 包头 */
+    p.packetHeader.purpose = Purpose::GetInfo;
+    p.packetHeader.data_size = strMsg.size();
+
+    return p;
+}
+
+NetPacket NetPacketGenerator::sendMessageInfo_P(const json &messages)
+{
+    NetPacket p;
+    json jsonMsg;
+
+    jsonMsg["infotype"] = InfoType::Message;
+    jsonMsg["messages"] = messages;
+
+    /* 数据包 */
+    string strMsg = jsonMsg.dump();
+    strcpy(p.dataPacket.data, strMsg.data());
+    /* 包头 */
+    p.packetHeader.purpose = Purpose::GetInfo;
+    p.packetHeader.data_size = strMsg.size();
+
+    return p;
+}
+
 
 
 

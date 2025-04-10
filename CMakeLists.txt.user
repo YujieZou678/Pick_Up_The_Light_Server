@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 11.0.2, 2025-04-08T18:29:19. -->
+<!-- Written by QtCreator 11.0.2, 2025-04-10T20:55:34. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -401,6 +401,7 @@
     <value type="bool" key="RunConfiguration.UseCppDebuggerAuto">true</value>
     <value type="bool" key="RunConfiguration.UseQmlDebuggerAuto">true</value>
     <value type="bool" key="RunConfiguration.UseTerminal">false</value>
+    <value type="QString" key="RunConfiguration.WorkingDirectory.default">/root/my_test/MyServer/build-Pick_Up_The_Light_Server-C_C_Qt_6_5_2-Debug</value>
    </valuemap>
    <value type="qlonglong" key="ProjectExplorer.Target.RunConfigurationCount">1</value>
   </valuemap>

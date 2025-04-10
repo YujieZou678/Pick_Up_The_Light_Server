@@ -248,6 +248,32 @@ void SendFileControl::send_file(int fd, const string &buf)
         if (send_vfile(fd, FileType::Video, filepath.data(), string(jsonMsg["id"]), publisherId, videoSuffix)) {
             std::cout << "发送成功" << std::endl;
         } else std::cout << "发送失败" << std::endl;
+    } else if (jsonMsg["filetype"] == FileType::ChatImg) {
+        /* 聊天图像 */
+        dirpath = CHAT_PICTURE_URL;
+        filepath = dirpath + string(jsonMsg["imgName"]);
+        if (send_pfile(fd, FileType::ChatImg, filepath.data(), string(jsonMsg["id"]), string(jsonMsg["imgName"]))) {
+            std::cout << "发送成功" << std::endl;
+        } else std::cout << "发送失败" << std::endl;
+    } else if (jsonMsg["filetype"] == FileType::VideoPreviewImg) {
+        /* 视频预览图 */
+        string previewSuffix = "";
+        command = "select previewSuffix from Video where id=" + string(jsonMsg["videoId"]);
+        mysqlpp::StoreQueryResult res = Singleton<DbBroker>::getInstance()->query_store(command);
+        if (res != NULL) {
+            if (res.begin() != res.end()) {
+                auto it = res.begin();
+                mysqlpp::Row row = *it;
+                previewSuffix = string(row[0]);
+            }
+        }
+        else cerr << "query.store() failed!" << endl;
+
+        dirpath = PREVIEW_PICTURE_URL;
+        filepath = dirpath + string(jsonMsg["videoId"]) + previewSuffix;
+        if (send_pfile(fd, FileType::VideoPreviewImg, filepath.data(), string(jsonMsg["id"]), string(jsonMsg["videoId"])+previewSuffix)) {
+            std::cout << "发送成功" << std::endl;
+        } else std::cout << "发送失败" << std::endl;
     }
 }
 
@@ -292,6 +318,32 @@ void SendFileControl::send_file(shared_ptr<boost::asio::ip::tcp::socket> socket_
         dirpath = VIDEO_URL;
         filepath = dirpath + string(jsonMsg["id"]) + videoSuffix;
         if (send_vfile(socket_ptr, FileType::Video, filepath.data(), string(jsonMsg["id"]), publisherId, videoSuffix)) {
+            std::cout << "发送成功" << std::endl;
+        } else std::cout << "发送失败" << std::endl;
+    } else if (jsonMsg["filetype"] == FileType::ChatImg) {
+        /* 聊天图像 */
+        dirpath = CHAT_PICTURE_URL;
+        filepath = dirpath + string(jsonMsg["imgName"]);
+        if (send_pfile(socket_ptr, FileType::ChatImg, filepath.data(), string(jsonMsg["id"]), string(jsonMsg["imgName"]))) {
+            std::cout << "发送成功" << std::endl;
+        } else std::cout << "发送失败" << std::endl;
+    } else if (jsonMsg["filetype"] == FileType::VideoPreviewImg) {
+        /* 视频预览图 */
+        string previewSuffix = "";
+        command = "select previewSuffix from Video where id=" + string(jsonMsg["videoId"]);
+        mysqlpp::StoreQueryResult res = Singleton<DbBroker>::getInstance()->query_store(command);
+        if (res != NULL) {
+            if (res.begin() != res.end()) {
+                auto it = res.begin();
+                mysqlpp::Row row = *it;
+                previewSuffix = string(row[0]);
+            }
+        }
+        else cerr << "query.store() failed!" << endl;
+
+        dirpath = PREVIEW_PICTURE_URL;
+        filepath = dirpath + string(jsonMsg["videoId"]) + previewSuffix;
+        if (send_pfile(socket_ptr, FileType::VideoPreviewImg, filepath.data(), string(jsonMsg["id"]), string(jsonMsg["videoId"])+previewSuffix)) {
             std::cout << "发送成功" << std::endl;
         } else std::cout << "发送失败" << std::endl;
     }

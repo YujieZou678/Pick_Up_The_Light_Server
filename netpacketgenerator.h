@@ -29,6 +29,10 @@ public:
     NetPacket sendFansInfo_P(const json &fansInfo);
     NetPacket sendLiveInfo_P(const json &liveInfo);
     NetPacket sendLiveList_P(const json &liveList);
+    NetPacket sendNickNameInfo_P(const json &nickNameInfo);
+    NetPacket sendUserVideoInfo_P(const string &userId, const json &userVideoList);
+    NetPacket sendUserVideoLikeInfo_P(const string &userId, const json &userVideoLikeList);
+    NetPacket sendMessageInfo_P(const json &messages);
 
 private:
     NetPacketGenerator();

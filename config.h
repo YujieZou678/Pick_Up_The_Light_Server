@@ -90,7 +90,12 @@ enum class InfoType {
     Fans,
     VodList,
     LiveList,
-    Video
+    Video,
+    NickName,
+    VideoProfile,
+    UserVideo,
+    UserVideoLike,
+    Message
 };
 
 /* 消息类型 */
