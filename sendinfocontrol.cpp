@@ -22,7 +22,7 @@ void SendInfoControl::send_info(int fd, const string &buf)
     case InfoType::Comment: {
         /* 获取评论 */
         string videoId = jsonMsg["id"];
-        string command = "select * from Comment where videoId="+videoId;
+        string command = "select * from Comment where videoId="+videoId+" order by time desc";
         mysqlpp::StoreQueryResult res = Singleton<DbBroker>::getInstance()->query_store(command);
         if (res != NULL) {
             if (res.begin() != res.end()) {
@@ -239,7 +239,7 @@ void SendInfoControl::send_info(int fd, const string &buf)
     case InfoType::Message: {
         string userId1 = jsonMsg["userId1"];
         string userId2 = jsonMsg["userId2"];
-        string command = "select * from Message where sendId = "+ userId1 + " and receiveId = "+ userId2 +" union select * from Message where sendId = "+ userId2 + " and receiveId = "+ userId1;
+        string command = "select * from (select * from Message where sendId = "+ userId1 + " and receiveId = "+ userId2 +" union select * from Message where sendId = "+ userId2 + " and receiveId = "+ userId1+") as t order by time desc";
         mysqlpp::StoreQueryResult res = Singleton<DbBroker>::getInstance()->query_store(command);
         if (res != NULL) {
             if (res.begin() != res.end()) {
@@ -277,7 +277,7 @@ void SendInfoControl::send_info(shared_ptr<boost::asio::ip::tcp::socket> socket_
     case InfoType::Comment: {
         /* 获取评论 */
         string videoId = jsonMsg["id"];
-        string command = "select * from Comment where videoId="+videoId;
+        string command = "select * from Comment where videoId="+videoId+" order by time desc";
         mysqlpp::StoreQueryResult res = Singleton<DbBroker>::getInstance()->query_store(command);
         if (res != NULL) {
             if (res.begin() != res.end()) {
@@ -494,7 +494,7 @@ void SendInfoControl::send_info(shared_ptr<boost::asio::ip::tcp::socket> socket_
     case InfoType::Message: {
         string userId1 = jsonMsg["userId1"];
         string userId2 = jsonMsg["userId2"];
-        string command = "select * from Message where sendId = "+ userId1 + " and receiveId = "+ userId2 +" union select * from Message where sendId = "+ userId2 + " and receiveId = "+ userId1;
+        string command = "select * from (select * from Message where sendId = "+ userId1 + " and receiveId = "+ userId2 +" union select * from Message where sendId = "+ userId2 + " and receiveId = "+ userId1+") as t order by time desc";
         mysqlpp::StoreQueryResult res = Singleton<DbBroker>::getInstance()->query_store(command);
         if (res != NULL) {
             if (res.begin() != res.end()) {
