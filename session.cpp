@@ -3,6 +3,7 @@
 #include <iostream>
 #include <thread>
 
+#include "dbbroker.h"
 #include "userstatusevaluator.h"
 #include "netpacketgenerator.h"
 #include "initcontrol.h"
@@ -98,6 +99,25 @@ void Session::processSingleRequest(NetPacketHeader &pheader)
         if (ret==-1 || ret==0 || ret!=pheader.data_size) return;
         /* 修改信息 */
         Singleton<ModifyInfoControl>::getInstance()->modify_info(m_socket_ptr, m_buf.data());
+    }
+    break;
+    case Purpose::Chat: {
+        std::cout << "Chat" << std::endl;
+        /* 2.读数据包 */
+        m_buf.fill(0);
+        ret = boost::asio::read(*m_socket_ptr, boost::asio::buffer(m_buf, pheader.data_size));
+        if (ret==-1 || ret==0 || ret!=pheader.data_size) return;
+        json jsonMsg = json::parse(m_buf);
+        MessageType messagetype = jsonMsg["messagetype"];
+        if (messagetype == MessageType::Characters) {
+            /* 文字聊天 */
+            string command = "insert into Message(sendId, receiveId, messageType, message, time) values('"+ string(jsonMsg["sendId"]) +"', '" + string(jsonMsg["receiveId"]) + "', '" + std::to_string(int(MessageType::Characters)) + "', '"+ string(jsonMsg["content"]) +"', (select now()))";
+            Singleton<DbBroker>::getInstance()->query_execute(command);
+        } else if (messagetype == MessageType::VideoPreviewImg ) {
+            /* 分享视频 */
+            string command = "insert into Message(sendId, receiveId, messageType, message, time) values('"+ string(jsonMsg["sendId"]) +"', '" + string(jsonMsg["receiveId"]) + "', '" + std::to_string(int(MessageType::VideoPreviewImg)) + "', '"+ string(jsonMsg["videoId"]) +"', (select now()))";
+            Singleton<DbBroker>::getInstance()->query_execute(command);
+        }
     }
     break;
     default:

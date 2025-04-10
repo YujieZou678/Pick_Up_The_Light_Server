@@ -15,6 +15,7 @@ date: 2024.12.2
 #include "nlohmann/json.hpp"
 using json = nlohmann::json;
 
+#include "dbbroker.h"
 #include "threadpool.h"
 #include "epolloperator.h"
 #include "userstatusevaluator.h"
@@ -225,6 +226,26 @@ void MyServer::processSingleRequest(int fd, NetPacketHeader &pheader)
         if (ret==-1 || ret==0 || ret!=pheader.data_size) return;
         /* 修改信息 */
         m_modifyInfoControl->modify_info(fd, buf);
+    }
+    break;
+    case Purpose::Chat: {
+        std::cout << "Chat" << std::endl;
+        /* 2.读数据包 */
+        char buf[BUF_SIZE];
+        memset(buf, 0, sizeof(buf));
+        ret = my_recv(fd, buf, pheader.data_size, 0);
+        if (ret==-1 || ret==0 || ret!=pheader.data_size) return;
+        json jsonMsg = json::parse(buf);
+        MessageType messagetype = jsonMsg["messagetype"];
+        if (messagetype == MessageType::Characters) {
+            /* 文字聊天 */
+            string command = "insert into Message(sendId, receiveId, messageType, message, time) values('"+ string(jsonMsg["sendId"]) +"', '" + string(jsonMsg["receiveId"]) + "', '" + std::to_string(int(MessageType::Characters)) + "', '"+ string(jsonMsg["content"]) +"', (select now()))";
+            Singleton<DbBroker>::getInstance()->query_execute(command);
+        } else if (messagetype == MessageType::VideoPreviewImg ) {
+            /* 分享视频 */
+            string command = "insert into Message(sendId, receiveId, messageType, message, time) values('"+ string(jsonMsg["sendId"]) +"', '" + string(jsonMsg["receiveId"]) + "', '" + std::to_string(int(MessageType::VideoPreviewImg)) + "', '"+ string(jsonMsg["videoId"]) +"', (select now()))";
+            Singleton<DbBroker>::getInstance()->query_execute(command);
+        }
     }
     break;
     default:

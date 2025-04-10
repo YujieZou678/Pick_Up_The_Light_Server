@@ -148,12 +148,6 @@ void ModifyInfoControl::modify_info(int fd, const string &buf)
         Singleton<DbBroker>::getInstance()->query_execute(command);
     }
     break;
-    case InfoType::Message: {
-        /* 聊天 */
-        string command = "insert into Message(sendId, receiveId, messageType, message, time) values('"+ string(jsonMsg["sendId"]) +"', '" + string(jsonMsg["receiveId"]) + "', '" + std::to_string(int(MessageType::Characters)) + "', '"+ string(jsonMsg["content"]) +"', (select now()))";
-        Singleton<DbBroker>::getInstance()->query_execute(command);
-    }
-    break;
     default:
         break;
     }
@@ -286,12 +280,6 @@ void ModifyInfoControl::modify_info(shared_ptr<tcp::socket> socket_ptr, const st
         string videoId = jsonMsg["videoId"];
         string newProfile = jsonMsg["newProfile"];
         string command = "update Video set profile = '" + newProfile + "' where id =" + videoId;
-        Singleton<DbBroker>::getInstance()->query_execute(command);
-    }
-    break;
-    case InfoType::Message: {
-        /* 聊天 */
-        string command = "insert into Message(sendId, receiveId, messageType, message, time) values('"+ string(jsonMsg["sendId"]) +"', '" + string(jsonMsg["receiveId"]) + "', '" + std::to_string(int(MessageType::Characters)) + "', '"+ string(jsonMsg["content"]) +"', (select now()))";
         Singleton<DbBroker>::getInstance()->query_execute(command);
     }
     break;
