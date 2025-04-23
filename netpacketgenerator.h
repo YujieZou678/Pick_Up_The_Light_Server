@@ -33,6 +33,7 @@ public:
     NetPacket sendUserVideoInfo_P(const string &userId, const json &userVideoList);
     NetPacket sendUserVideoLikeInfo_P(const string &userId, const json &userVideoLikeList);
     NetPacket sendMessageInfo_P(const json &messages);
+    NetPacket sendVideoPushInfo_P(const json &videos);
 
 private:
     NetPacketGenerator();

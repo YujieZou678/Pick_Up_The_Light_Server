@@ -74,6 +74,12 @@ void DbBroker::initDataBase()
      * 创建表Follow */
     command = "create table Follow(userId varchar(30), followerId varchar(30))";
     query_execute(command);
+    /*
+     * 视频推送
+     * userId videoId
+     * 创建表VideoPush */
+    command = "create table VideoPush(userId varchar(30), videoId varchar(30))";
+    query_execute(command);
 
     cout << "DB: Successfully init!" << endl;
 }

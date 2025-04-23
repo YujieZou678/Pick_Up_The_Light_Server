@@ -45,6 +45,9 @@ date: 2024.12.2
 /* 点播视频存储地址 */
 #define VIDEO_URL "/opt/nginx-video/"
 
+/* 点播视频网络地址 */
+#define NET_VIDEO_URL "http://192.168.156.74/"
+
 template <typename T>  //删除指针
 inline void safe_delete(T *&target) {
     if (nullptr != target) {
@@ -95,7 +98,8 @@ enum class InfoType {
     VideoProfile,
     UserVideo,
     UserVideoLike,
-    Message
+    Message,
+    VideoPush
 };
 
 /* 消息类型 */

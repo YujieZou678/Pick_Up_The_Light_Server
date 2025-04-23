@@ -262,6 +262,24 @@ NetPacket NetPacketGenerator::sendMessageInfo_P(const json &messages)
     return p;
 }
 
+NetPacket NetPacketGenerator::sendVideoPushInfo_P(const json &videos)
+{
+    NetPacket p;
+    json jsonMsg;
+
+    jsonMsg["infotype"] = InfoType::VideoPush;
+    jsonMsg["videos"] = videos;
+
+    /* 数据包 */
+    string strMsg = jsonMsg.dump();
+    strcpy(p.dataPacket.data, strMsg.data());
+    /* 包头 */
+    p.packetHeader.purpose = Purpose::GetInfo;
+    p.packetHeader.data_size = strMsg.size();
+
+    return p;
+}
+
 
 
 

@@ -58,7 +58,7 @@ void SendInfoControl::send_info(int fd, const string &buf)
                 mysqlpp::Row row;
                 for (auto it = res.begin(); it < res.end(); it++) {
                     row = *it;
-                    string url = "http://127.0.0.1/"+string(row[0])+string(row[2]);
+                    string url = NET_VIDEO_URL+string(row[0])+string(row[2]);
                     videoList.push_back(toJson_VodListInfo(string(row[0]), string(row[1]), url, string(row[3]), string(row[5])));
                 }
                 NetPacket p = Singleton<NetPacketGenerator>::getInstance()->sendVodList_P(videoList);
@@ -258,6 +258,37 @@ void SendInfoControl::send_info(int fd, const string &buf)
                 /* 没数据 */
                 json messages;
                 NetPacket p = Singleton<NetPacketGenerator>::getInstance()->sendMessageInfo_P(messages);
+                my_send(fd, &p, sizeof(NetPacketHeader)+p.packetHeader.data_size, 0);
+            }
+        }
+        else cerr << "query.store() failed!" << endl;
+    }
+    break;
+    case InfoType::VideoPush: {
+        /* 获取视频推送数据，用完即删 */
+        string userId = jsonMsg["userId"];
+        string command = "select videoId from VideoPush where userId = " + userId;
+        mysqlpp::StoreQueryResult res = Singleton<DbBroker>::getInstance()->query_store(command);
+        if (res != NULL) {
+            if (res.begin() != res.end()) {
+                /* 有数据 */
+                json videos;
+                auto it = res.begin();
+                mysqlpp::Row row = *it;
+                for (auto it = res.begin(); it < res.end(); it++) {
+                    row = *it;
+                    videos.push_back(row[0]);
+                }
+
+                NetPacket p = Singleton<NetPacketGenerator>::getInstance()->sendVideoPushInfo_P(videos);
+                my_send(fd, &p, sizeof(NetPacketHeader)+p.packetHeader.data_size, 0);
+                /* 删除 */
+                command = "delete from VideoPush where userId = " + userId;
+                Singleton<DbBroker>::getInstance()->query_execute(command);
+            } else {
+                /* 没数据 */
+                json videos;
+                NetPacket p = Singleton<NetPacketGenerator>::getInstance()->sendVideoPushInfo_P(videos);
                 my_send(fd, &p, sizeof(NetPacketHeader)+p.packetHeader.data_size, 0);
             }
         }
@@ -513,6 +544,37 @@ void SendInfoControl::send_info(shared_ptr<boost::asio::ip::tcp::socket> socket_
                 /* 没数据 */
                 json messages;
                 NetPacket p = Singleton<NetPacketGenerator>::getInstance()->sendMessageInfo_P(messages);
+                boost::asio::write(*socket_ptr, boost::asio::buffer(&p, sizeof(NetPacketHeader)+p.packetHeader.data_size));
+            }
+        }
+        else cerr << "query.store() failed!" << endl;
+    }
+    break;
+    case InfoType::VideoPush: {
+        /* 获取视频推送数据，用完即删 */
+        string userId = jsonMsg["userId"];
+        string command = "select videoId from VideoPush where userId = " + userId;
+        mysqlpp::StoreQueryResult res = Singleton<DbBroker>::getInstance()->query_store(command);
+        if (res != NULL) {
+            if (res.begin() != res.end()) {
+                /* 有数据 */
+                json videos;
+                auto it = res.begin();
+                mysqlpp::Row row = *it;
+                for (auto it = res.begin(); it < res.end(); it++) {
+                    row = *it;
+                    videos.push_back(row[0]);
+                }
+
+                NetPacket p = Singleton<NetPacketGenerator>::getInstance()->sendVideoPushInfo_P(videos);
+                boost::asio::write(*socket_ptr, boost::asio::buffer(&p, sizeof(NetPacketHeader)+p.packetHeader.data_size));
+                /* 删除 */
+                command = "delete from VideoPush where userId = " + userId;
+                Singleton<DbBroker>::getInstance()->query_execute(command);
+            } else {
+                /* 没数据 */
+                json videos;
+                NetPacket p = Singleton<NetPacketGenerator>::getInstance()->sendVideoPushInfo_P(videos);
                 boost::asio::write(*socket_ptr, boost::asio::buffer(&p, sizeof(NetPacketHeader)+p.packetHeader.data_size));
             }
         }
