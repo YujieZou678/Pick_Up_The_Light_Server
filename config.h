@@ -22,7 +22,7 @@ date: 2024.12.2
 #define EPOLL_TIME_OUT -1
 
 /* 普通数据包 */
-#define BUF_SIZE 1024
+#define BUF_SIZE 1024*10
 
 /* 文件数据包 1G */
 #define FILE_BUF_SIZE 1024*1024*1024
