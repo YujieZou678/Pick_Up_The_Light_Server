@@ -273,11 +273,26 @@ void SendInfoControl::send_info(int fd, const string &buf)
             if (res.begin() != res.end()) {
                 /* 有数据 */
                 json videos;
+                json video;
                 auto it = res.begin();
                 mysqlpp::Row row = *it;
                 for (auto it = res.begin(); it < res.end(); it++) {
                     row = *it;
-                    videos.push_back(row[0]);
+                    video["videoId"] = string(row[0]);
+                    /* 为每个视频查找对应的publisherId */
+                    command = "select publisherId from Video where id = " + string(row[0]);
+                    mysqlpp::StoreQueryResult res = Singleton<DbBroker>::getInstance()->query_store(command);
+                    if (res != NULL) {
+                        if (res.begin() != res.end()) {
+                            /* 有数据 */
+                            auto data = res.begin();
+                            row = *data;
+                            video["publisherId"] = string(row[0]);
+                        }
+                    }
+                    else cerr << "query.store() failed!" << endl;
+                    /* 打包一个视频信息 */
+                    videos.push_back(video);
                 }
 
                 NetPacket p = Singleton<NetPacketGenerator>::getInstance()->sendVideoPushInfo_P(videos);
@@ -559,11 +574,26 @@ void SendInfoControl::send_info(shared_ptr<boost::asio::ip::tcp::socket> socket_
             if (res.begin() != res.end()) {
                 /* 有数据 */
                 json videos;
+                json video;
                 auto it = res.begin();
                 mysqlpp::Row row = *it;
                 for (auto it = res.begin(); it < res.end(); it++) {
                     row = *it;
-                    videos.push_back(row[0]);
+                    video["videoId"] = string(row[0]);
+                    /* 为每个视频查找对应的publisherId */
+                    command = "select publisherId from Video where id = " + string(row[0]);
+                    mysqlpp::StoreQueryResult res = Singleton<DbBroker>::getInstance()->query_store(command);
+                    if (res != NULL) {
+                        if (res.begin() != res.end()) {
+                            /* 有数据 */
+                            auto data = res.begin();
+                            row = *data;
+                            video["publisherId"] = string(row[0]);
+                        }
+                    }
+                    else cerr << "query.store() failed!" << endl;
+                    /* 打包一个视频信息 */
+                    videos.push_back(video);
                 }
 
                 NetPacket p = Singleton<NetPacketGenerator>::getInstance()->sendVideoPushInfo_P(videos);
