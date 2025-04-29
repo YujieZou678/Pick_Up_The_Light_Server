@@ -2,6 +2,7 @@
 
 #include <mysql++/mysql++.h>
 #include <iostream>
+using std::cout;
 using std::cerr;
 using std::endl;
 
@@ -63,6 +64,17 @@ void SendInfoControl::send_info(int fd, const string &buf)
                 }
                 NetPacket p = Singleton<NetPacketGenerator>::getInstance()->sendVodList_P(videoList);
                 my_send(fd, &p, sizeof(NetPacketHeader)+p.packetHeader.data_size, 0);
+                /* 打印log */
+                cout << "----VodList----" << endl;
+                for (int i=0; i<videoList.size(); i++) {
+                    json vodList = videoList[i];
+                    cout << vodList["videoId"] << endl;
+                    cout << vodList["publisherId"] << endl;
+                    cout << vodList["url"] << endl;
+                    cout << vodList["profile"] << endl;
+                    cout << vodList["time"] << endl;
+                    cout << "----end----" << endl;
+                }
             } else {
                 /* 没数据 */
                 json videoList;
@@ -364,6 +376,17 @@ void SendInfoControl::send_info(shared_ptr<boost::asio::ip::tcp::socket> socket_
                 }
                 NetPacket p = Singleton<NetPacketGenerator>::getInstance()->sendVodList_P(videoList);
                 boost::asio::write(*socket_ptr, boost::asio::buffer(&p, sizeof(NetPacketHeader)+p.packetHeader.data_size));
+                /* 打印log */
+                cout << "----VodList----" << endl;
+                for (int i=0; i<videoList.size(); i++) {
+                    json vodList = videoList[i];
+                    cout << vodList["videoId"] << endl;
+                    cout << vodList["publisherId"] << endl;
+                    cout << vodList["url"] << endl;
+                    cout << vodList["profile"] << endl;
+                    cout << vodList["time"] << endl;
+                    cout << "----end----" << endl;
+                }
             } else {
                 /* 没数据 */
                 json videoList;

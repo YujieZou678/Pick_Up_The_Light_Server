@@ -28,10 +28,10 @@ int main(int argc, char* argv[])
     /* 数据库初始化 */
     Singleton<DbBroker>::getInstance()->initDataBase();
     /* 启动服务器1 */
-    MyServer myServer;
-    myServer.launch();  //循环监听
+//    MyServer myServer;
+//    myServer.launch();  //循环监听
     /* 启动服务器2 */
-//    BoostServer boostServer;
-//    boostServer.launch();  //循环监听
+    BoostServer boostServer;
+    boostServer.launch();  //循环监听
     return 0;
 }

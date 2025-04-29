@@ -1,6 +1,8 @@
 #include "session.h"
 
 #include <iostream>
+using std::cout;
+using std::endl;
 #include <thread>
 
 #include "dbbroker.h"
@@ -113,10 +115,24 @@ void Session::processSingleRequest(NetPacketHeader &pheader)
             /* 文字聊天 */
             string command = "insert into Message(sendId, receiveId, messageType, message, time) values('"+ string(jsonMsg["sendId"]) +"', '" + string(jsonMsg["receiveId"]) + "', '" + std::to_string(int(MessageType::Characters)) + "', '"+ string(jsonMsg["content"]) +"', (select now()))";
             Singleton<DbBroker>::getInstance()->query_execute(command);
+            /* 打印log */
+            cout << "----Characters----" << endl;
+            cout << "sendId：" << string(jsonMsg["sendId"]) << endl;
+            cout << "receiveId：" << string(jsonMsg["receiveId"]) << endl;
+            cout << "messageType：" << std::to_string(int(MessageType::Characters)) << endl;
+            cout << "message：" << string(jsonMsg["content"]) << endl;
+            cout << "----end----" << endl;
         } else if (messagetype == MessageType::VideoPreviewImg ) {
             /* 分享视频 */
             string command = "insert into Message(sendId, receiveId, messageType, message, time) values('"+ string(jsonMsg["sendId"]) +"', '" + string(jsonMsg["receiveId"]) + "', '" + std::to_string(int(MessageType::VideoPreviewImg)) + "', '"+ string(jsonMsg["videoId"]) +"', (select now()))";
             Singleton<DbBroker>::getInstance()->query_execute(command);
+            /* 打印log */
+            cout << "----VideoPreviewImg----" << endl;
+            cout << "sendId：" << string(jsonMsg["sendId"]) << endl;
+            cout << "receiveId：" << string(jsonMsg["receiveId"]) << endl;
+            cout << "messageType：" << std::to_string(int(MessageType::VideoPreviewImg)) << endl;
+            cout << "message：" << string(jsonMsg["videoId"]) << endl;
+            cout << "----end----" << endl;
         }
     }
     break;

@@ -2,6 +2,9 @@
 
 #include <fstream>
 using std::ofstream;
+#include <iostream>
+using std::cout;
+using std::endl;
 
 #include "nlohmann/json.hpp"
 using json = nlohmann::json;
@@ -57,6 +60,8 @@ bool ReceiveFileControl::receive_file(int fd, const string &fileInfo, char *file
     Singleton<DbBroker>::getInstance()->query_execute(command);
     if (jsonMsg["filetype"] == FileType::Video) {
         /* 添加新视频推送功能 */
+        cout << "----VideoPush----" << endl;
+        cout << "videoId：" << videoId << endl;
         command = "select followerId from Follow where userId = " + string(jsonMsg["id"]);
         mysqlpp::StoreQueryResult res = Singleton<DbBroker>::getInstance()->query_store(command);
         if (res != NULL) {
@@ -67,7 +72,10 @@ bool ReceiveFileControl::receive_file(int fd, const string &fileInfo, char *file
                     row = *it;
                     command = "insert into VideoPush Values('"+ string(row[0]) +"', '"+ videoId +"')";
                     Singleton<DbBroker>::getInstance()->query_execute(command);
+                    /* 打印log */
+                    cout << "followerId：" << string(row[0]) << endl;
                 }
+                cout << "----end----" << endl;
             }
         }
         else std::cerr << "query.store() failed!" << std::endl;
@@ -119,6 +127,8 @@ bool ReceiveFileControl::receive_file(shared_ptr<boost::asio::ip::tcp::socket> s
     Singleton<DbBroker>::getInstance()->query_execute(command);
     if (jsonMsg["filetype"] == FileType::Video) {
         /* 添加新视频推送功能 */
+        cout << "----VideoPush----" << endl;
+        cout << "videoId：" << videoId << endl;
         command = "select followerId from Follow where userId = " + string(jsonMsg["id"]);
         mysqlpp::StoreQueryResult res = Singleton<DbBroker>::getInstance()->query_store(command);
         if (res != NULL) {
@@ -129,7 +139,10 @@ bool ReceiveFileControl::receive_file(shared_ptr<boost::asio::ip::tcp::socket> s
                     row = *it;
                     command = "insert into VideoPush Values('"+ string(row[0]) +"', '"+ videoId +"')";
                     Singleton<DbBroker>::getInstance()->query_execute(command);
+                    /* 打印log */
+                    cout << "followerId：" << string(row[0]) << endl;
                 }
+                cout << "----end----" << endl;
             }
         }
         else std::cerr << "query.store() failed!" << std::endl;

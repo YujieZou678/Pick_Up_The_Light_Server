@@ -30,7 +30,7 @@ class ThreadPool : private Noncopyable
     friend class Singleton<ThreadPool>;  //赋予单例类调用构造权限
 public:
     template<class F,class... Args>
-    void add_task(F &&f, Args&&... args) {  //完美转发(万能引用)
+    void add_task(F &&f, Args &&...args) {  //完美转发(万能引用)
         Task task = std::bind(std::forward<F>(f), std::forward<Args>(args)...);
         unique_lock<mutex> lk(this->poll_mutex);  //加锁
         if (this->shutdown) return;
